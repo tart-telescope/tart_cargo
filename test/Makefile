@@ -1,2 +1,2 @@
 test:
-	stimela run example_recipe.yml tart=mu-udm ms=udm.ms
+	APPTAINER_TMPDIR=~/tmp stimela run example_recipe.yml tart=mu-udm ms=udm.ms
