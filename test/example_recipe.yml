@@ -1,0 +1,28 @@
+#!/usr/bin/env -S stimela run -l
+# This is a white-belt level Stimela 2.0 processing pipeline
+opts:
+    log:
+        dir: logs/log-{config.run.datetime}
+        name: log-{info.fqname}
+        nest: 2
+        symlink: log
+
+_include:
+    - (tartcargo)tart2ms.yml
+
+tart-image:
+    info: TART imaging using stimela
+
+    # this recipe has some input parameters
+    inputs:
+        ms:
+            dtype: str
+            required: true
+            info: "TART measurement set"
+
+    steps:
+        create-ms:
+            cab: tart2ms
+            params:
+                hdf: ./vis_2025-03-08_18_52_29.028055.hdf
+                ms: =recipe.ms
