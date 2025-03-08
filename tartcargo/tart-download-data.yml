@@ -1,0 +1,22 @@
+_include:
+  - genesis/tart-cargo-base.yml
+
+cabs:
+  tart-download-data:
+    image:
+      _use: vars.tart-cargo.images
+      name: tools
+    command: tart_download_data
+    info: Download data from a TART
+    inputs:
+        api:
+            dtype: str
+            required: true
+        n:
+            dtype: int
+            required: false
+            default: 1
+        raw:
+            dtype: bool
+            default: false
+

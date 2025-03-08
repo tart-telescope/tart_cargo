@@ -8,19 +8,33 @@ opts:
         symlink: log
 
 _include:
-    - (tartcargo)tart2ms.yml
+    - (tartcargo):
+        - tart2ms.yml
+        - tart-download-data.yml
 
 tart-image:
     info: TART imaging using stimela
 
     # this recipe has some input parameters
     inputs:
+        tart:
+            dtype: str
+            required: true
+            info: "TART name (e.g. mu-udm)"
         ms:
             dtype: str
             required: true
             info: "TART measurement set"
+    assign:
+        api: = 'https://api.elec.ac.nz/tart/{recipe.tart}'
 
     steps:
+
+        download-hdf:
+            cab: tart-download-data
+            params:
+                api: =recipe.api
+
         create-ms:
             cab: tart2ms
             params:
