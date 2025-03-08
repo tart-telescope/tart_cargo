@@ -11,7 +11,13 @@ cabs:
     info: Create measurement sets from TART data
 
     inputs:
-      ms:
-        dtype: MS
-        writable: true
-        required: true
+        ms:
+            dtype: str
+            required: true
+        hdf:
+            dtype: str
+            required: true
+        single-field:
+            dtype: bool
+            default: false
+
