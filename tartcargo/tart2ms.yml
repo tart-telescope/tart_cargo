@@ -1,0 +1,17 @@
+_include:
+  - genesis/tart-cargo-base.yml
+
+cabs:
+  tart2ms:
+    name: tart2ms
+    image:
+      _use: vars.tart-cargo.images
+      name: tools
+    command: tart2ms
+    info: Create measurement sets from TART data
+
+    inputs:
+      ms:
+        dtype: MS
+        writable: true
+        required: true

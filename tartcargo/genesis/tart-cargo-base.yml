@@ -1,0 +1,5 @@
+vars:
+  tart-cargo:
+    images:
+      registry: ghcr.io/tart-telescope
+      version: 0.9b4

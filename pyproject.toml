@@ -1,0 +1,23 @@
+[project]
+name = "tart-cargo"
+version = "0.1.0"
+description = "Curated cargo of TART radio astronomy packages for stimela 2.0"
+authors = [
+    {name = "Tim Molteno",email = "tim@elec.ac.nz"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = "<4.0,>=3.8"
+packages = [{include = "tartcargo"}]
+
+[tool.poetry.dependencies]
+stimela = "^2.0.1.1"
+requests = "^2.0"
+
+[tool.poetry]
+
+[tool.poetry.group.dev.dependencies]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
