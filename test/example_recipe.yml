@@ -11,6 +11,8 @@ _include:
     - (tartcargo):
         - tart2ms.yml
         - tart-download-data.yml
+        - disko.yml
+        - disko-draw.yml
 
 tart-image:
     info: TART imaging using stimela
@@ -27,6 +29,7 @@ tart-image:
             info: "TART measurement set"
     assign:
         api: = 'https://api.elec.ac.nz/tart/{recipe.tart}'
+        hdf: = 'vis_{recipe.tart}.hdf'
 
     steps:
 
@@ -35,9 +38,31 @@ tart-image:
             params:
                 api: =recipe.api
                 vis: true
+                file: =recipe.hdf
 
         create-ms:
             cab: tart2ms
             params:
-                hdf: ./vis_2025-03-08_18_52_29.028055.hdf
+                hdf: =recipe.hdf
                 ms: =recipe.ms
+                clobber: true
+                single-field: true
+                rephase: obs-midpoint
+
+        disko-image:
+            cab: disko
+            params:
+                ms: =recipe.ms
+                HDF: '{recipe.tart}.h5'
+                healpix: true
+                fov: 170deg
+                res: 0.5deg
+                lasso: true
+                alpha: 0.006
+
+        project-image:
+            cab: disko-draw
+            params:
+                hdf: '{recipe.tart}.h5'
+                show-sources: true
+                SVG: '{recipe.tart}.svg'

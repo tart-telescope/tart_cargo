@@ -1,4 +1,7 @@
+.tartcache
 *.deps
+*.log
+*.ms
 *.txt
 *.full
 logs/**
