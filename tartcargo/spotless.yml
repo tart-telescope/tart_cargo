@@ -1,30 +1,30 @@
 _include:
-  - genesis/tart-cargo-base.yml
+    - genesis/tart-cargo-base.yml
 
 cabs:
-  disko:
-    name: spotless
-    image:
-      _use: vars.tart-cargo.images
-      name: tools
-    command: spotless
-    info: Image the radio sky using model-fitting.
+    disko:
+        name: spotless
+        image:
+            _use: vars.tart-cargo.images
+            name: tools
+        command: spotless
+        info: Image the radio sky using model-fitting.
 
-    inputs:
-        ms:
-            dtype: MS
-            required: true
-            info: The measurement set
-        healpix:
-            dtype: bool
-            default: true
-        fov:
-            dtype: str
-            required: true
-            info: The field of view use a suffix (deg, arcmin, arcsec)
-        res:
-            dtype: str
-            required: true
-            info: The resolution per pixel use a suffix (deg, arcmin, arcsec)
+        inputs:
+            ms:
+                dtype: MS
+                required: true
+                info: The measurement set
+            healpix:
+                dtype: bool
+                default: true
+            fov:
+                dtype: str
+                required: true
+                info: The field of view use a suffix (deg, arcmin, arcsec)
+            res:
+                dtype: str
+                required: true
+                info: The resolution per pixel use a suffix (deg, arcmin, arcsec)
 
 

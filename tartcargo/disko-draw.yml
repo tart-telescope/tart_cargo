@@ -21,26 +21,27 @@
 #   --version             Display the current version (default: False)
 #   --debug               Display debugging information (default: False)
 _include:
-  - genesis/tart-cargo-base.yml
+    - genesis/tart-cargo-base.yml
 
 cabs:
-  disko-draw:
-    name: disko-draw
-    image:
-      _use: vars.tart-cargo.images
-      name: tools
-    command: disko_draw
-    info: Create a 2D projection of an HDF disko image.
-    inputs:
-        hdf:
-            dtype: str
-            required: true
-            info: The disko HDF output file
-            positional: true
-        show-sources:
-            dtype: bool
-            default: false
-            info: "Display the known sources in the field"
-        SVG:
-            dtype: str
-            info: "The name of the SVG output file"
+    disko-draw:
+        name: disko-draw
+        image:
+            _use: vars.tart-cargo.images
+            name: tools
+        command: disko_draw
+        info: Create a 2D projection of an HDF disko image.
+        inputs:
+            hdf:
+                dtype: File
+                required: true
+                info: The disko HDF output file
+                policies:
+                    positional: true
+            show-sources:
+                dtype: bool
+                default: false
+                info: "Display the known sources in the field"
+            SVG:
+                dtype: str
+                info: "The name of the SVG output file"

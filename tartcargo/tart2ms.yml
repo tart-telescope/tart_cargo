@@ -1,33 +1,33 @@
 _include:
-  - genesis/tart-cargo-base.yml
+    - genesis/tart-cargo-base.yml
 
 cabs:
-  tart2ms:
-    name: tart2ms
-    image:
-      _use: vars.tart-cargo.images
-      name: tools
-    command: tart2ms
-    info: Create measurement sets from TART data
+    tart2ms:
+        name: tart2ms
+        image:
+            _use: vars.tart-cargo.images
+            name: tools
+        command: tart2ms
+        info: Create measurement sets from TART data
 
-    inputs:
-        hdf:
-            dtype: File
-            required: true
-            must_exist: true
-            info: An HDF file downloaded from the TART telescope
-        single-field:
-            dtype: bool
-            default: false
-            info: Combine measurement sets into a single field
-        rephase:
-            choices: [obs-midpoint, sun]
-        clobber:
-            dtype: bool
-            default: false
-            info: overwrite the measurement set if it exists
-        ms:
-            dtype: str
-            required: true
-            info: The name of the measurement set
+        inputs:
+            hdf:
+                dtype: File
+                required: true
+                must_exist: true
+                info: An HDF file downloaded from the TART telescope
+            single-field:
+                dtype: bool
+                default: false
+                info: Combine measurement sets into a single field
+            rephase:
+                choices: [obs-midpoint, sun]
+            clobber:
+                dtype: bool
+                default: false
+                info: overwrite the measurement set if it exists
+            ms:
+                dtype: str
+                required: true
+                info: The name of the measurement set
 
