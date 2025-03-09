@@ -1,0 +1,46 @@
+# Draw and visualize discrete fields of view
+#
+# positional arguments:
+#   filename              The HDF5 field of view file
+#
+# options:
+#   -h, --help            show this help message and exit
+#   --catalog CATALOG     Catalog API URL. (default: https://tart.elec.ac.nz/catalog)
+#   --show-sources        Show known sources on images (only works on PNG & SVG). (default: False)
+#   --elevation ELEVATION
+#                         Elevation limit for displaying sources (degrees). (default: 20.0)
+#   --min MIN             Lower end of image range (-1 means calculate) (default: -1)
+#   --max MAX             Upper end of image range. (-1 means calculate) (default: -1)
+#   --PNG PNG             Generate a PNG format image. (default: None)
+#   --PDF PDF             Generate a PDF format image. (default: None)
+#   --SVG SVG             Generate a SVG format image. (default: None)
+#   --VTK VTK             Generate a VTK mesh format image. (default: None)
+#   --FITS FITS           Generate a FITS format image. (default: None)
+#   --sqrt                Scale pixels to the square root (default: False)
+#   --display             Display the field of view (default: False)
+#   --version             Display the current version (default: False)
+#   --debug               Display debugging information (default: False)
+_include:
+  - genesis/tart-cargo-base.yml
+
+cabs:
+  disko-draw:
+    name: disko-draw
+    image:
+      _use: vars.tart-cargo.images
+      name: tools
+    command: disko_draw
+    info: Create a 2D projection of an HDF disko image.
+    inputs:
+        hdf:
+            dtype: str
+            required: true
+            info: The disko HDF output file
+            positional: true
+        show-sources:
+            dtype: bool
+            default: false
+            info: "Display the known sources in the field"
+        SVG:
+            dtype: str
+            info: "The name of the SVG output file"

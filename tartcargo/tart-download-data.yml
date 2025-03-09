@@ -23,4 +23,8 @@ cabs:
         vis:
             dtype: bool
             default: false
+        file:
+            dtype: str
+            default: false
+            info: Set the name of the output file
 

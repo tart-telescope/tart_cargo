@@ -19,7 +19,13 @@ cabs:
         single-field:
             dtype: bool
             default: false
-    outputs:
+            info: Combine measurement sets into a single field
+        rephase:
+            choices: [obs-midpoint, sun]
+        clobber:
+            dtype: bool
+            default: false
+            info: overwrite the measurement set if it exists
         ms:
             dtype: str
             required: true
