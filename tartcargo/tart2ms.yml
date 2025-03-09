@@ -11,13 +11,17 @@ cabs:
     info: Create measurement sets from TART data
 
     inputs:
-        ms:
-            dtype: str
-            required: true
         hdf:
-            dtype: str
+            dtype: File
             required: true
+            must_exist: true
+            info: An HDF file downloaded from the TART telescope
         single-field:
             dtype: bool
             default: false
+    outputs:
+        ms:
+            dtype: str
+            required: true
+            info: The name of the measurement set
 

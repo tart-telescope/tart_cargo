@@ -34,6 +34,7 @@ tart-image:
             cab: tart-download-data
             params:
                 api: =recipe.api
+                vis: true
 
         create-ms:
             cab: tart2ms

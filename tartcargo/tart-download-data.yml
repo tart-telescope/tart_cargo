@@ -7,16 +7,20 @@ cabs:
       _use: vars.tart-cargo.images
       name: tools
     command: tart_download_data
-    info: Download data from a TART
+    info: Download data from a TART telescope
     inputs:
         api:
             dtype: str
             required: true
+            info: The API url for the TART. Usually something like https://api.elec.ac.nz/tart/mu-udm
         n:
             dtype: int
             required: false
             default: 1
         raw:
+            dtype: bool
+            default: false
+        vis:
             dtype: bool
             default: false
 
