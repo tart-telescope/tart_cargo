@@ -1,5 +1,5 @@
 #!/usr/bin/env -S stimela run -l
-# This is a white-belt level Stimela 2.0 processing pipeline
+# This basic TART Stimela 2.0 processing pipeline
 opts:
     log:
         dir: logs/log-{config.run.datetime}
@@ -17,19 +17,16 @@ _include:
 tart-image:
     info: TART imaging using stimela
 
-    # this recipe has some input parameters
     inputs:
         tart:
             dtype: str
             required: true
             info: "TART name (e.g. mu-udm)"
-        ms:
-            dtype: str
-            required: true
-            info: "TART measurement set"
+
     assign:
         api: = 'https://api.elec.ac.nz/tart/{recipe.tart}'
         hdf: = 'vis_{recipe.tart}.hdf'
+        ms: = '{recipe.tart}.ms'
 
     steps:
 
