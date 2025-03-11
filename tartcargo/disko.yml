@@ -15,6 +15,18 @@ cabs:
                 dtype: MS
                 required: true
                 info: The measurement set
+            nvis:
+                dtype: int
+                default: 1000
+                info: Number of visibilities to use. Memory use is proportional to this.
+            channel:
+                dtype: int
+                default: 0
+                info: The frequency channel to use.
+            field:
+                dtype: int
+                default: 0
+                info: The field to use.
             lasso:
                 dtype: bool
                 default: false
@@ -23,9 +35,14 @@ cabs:
                 dtype: float
                 default: 0.02
                 info: "The L1 regularization parameter"
+            l1-ratio:
+                dtype: float
+                default: 0.05
+                info: "The lasso L1/L2-ratio parameter"
             HDF:
                 dtype: str
                 required: true
+                info: The spherical image file (.hdf5) format
             healpix:
                 dtype: bool
                 default: true

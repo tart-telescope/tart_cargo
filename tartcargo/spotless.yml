@@ -1,4 +1,55 @@
-_include:
+# usage: spotless [-h] [--fov FOV] [--res RES] [--mesh] [--adaptive ADAPTIVE]
+#                 [--res-min RES_MIN] [--healpix] [--nside NSIDE] [--api API]
+#                 [--catalog CATALOG] [--file FILE | --ms MS | --vis VIS] [--nvis NVIS]
+#                 [--channel CHANNEL] [--field FIELD] [--ddid DDID] [--dir DIR] [--multimodel]
+#                 [--beam] [--display] [--fits] [--PNG] [--HDF HDF] [--PDF] [--SVG]
+#                 [--show-sources] [--elevation ELEVATION] [--title TITLE] [--version]
+#                 [--debug] [--show-model]
+#
+# Generate a SPOTLESS using the web api of a TART radio telescope.
+#
+# options:
+#   -h, --help            show this help message and exit
+#   --fov FOV             Field of view. E.g. 1.3deg, 12", 11', 8uas, 6mas... (default: 180deg)
+#   --res RES             Maximim Resolution of the sky. E.g. 1.3deg, 12", 11', 8uas, 6mas.
+#                         (default: 2deg)
+#   --mesh                Use a non-structured mesh in the image space (default: False)
+#   --adaptive ADAPTIVE   Use N cycles of adaptive meshing (default: 0)
+#   --res-min RES_MIN     Highest allowed res of the sky. E.g. 1.3deg, 12", 11', 8uas, 6mas.
+#                         (default: None)
+#   --healpix             Use HealPix tiling (default: False)
+#   --nside NSIDE         Healpix nside parameter for display purposes only. (default: None)
+#   --api API             Telescope API server URL. (default: https://tart.elec.ac.nz/signal)
+#   --catalog CATALOG     Catalog API URL. (default: https://tart.elec.ac.nz/catalog)
+#   --file FILE           Snapshot observation saved JSON file (visiblities, positions and
+#                         more). (default: None)
+#   --ms MS               visibility file (default: None)
+#   --vis VIS             Use a local JSON file containing the visibilities to create the
+#                         image. (default: None)
+#   --nvis NVIS           Number of visibilities to use. (default: 1000)
+#   --channel CHANNEL     Use this frequency channel. (default: 0)
+#   --field FIELD         Use this FIELD_ID from the measurement set. (default: 0)
+#   --ddid DDID           Use this DDID from the measurement set. (default: 0)
+#   --dir DIR             Output directory. (default: .)
+#   --multimodel          Use the SPOTLESS algorithm with multi-dimensional model. (default:
+#                         False)
+#   --beam                Generate a gridless beam. (default: False)
+#   --display             Display Image to the user (default: False)
+#   --fits                Generate a FITS format image (default: False)
+#   --PNG                 Generate a PNG format image (default: False)
+#   --HDF HDF             Generate an HDF format representation of the field of view (default:
+#                         None)
+#   --PDF                 Generate a PDF format image (default: False)
+#   --SVG                 Generate a SVG format image (default: False)
+#   --show-sources        Show known sources on images (only works on PNG). (default: False)
+#   --elevation ELEVATION
+#                         Elevation limit for displaying sources (degrees) (default: 20.0)
+#   --title TITLE         Prefix the output files. (default: spotless)
+#   --version             Display the current version (default: False)
+#   --debug               Display debugging information (default: False)
+#   --show-model          Show the location of the model sources. (default: False)
+
+  _include:
     - genesis/tart-cargo-base.yml
 
 cabs:
@@ -15,6 +66,22 @@ cabs:
                 dtype: MS
                 required: true
                 info: The measurement set
+            HDF:
+                dtype: str
+                required: true
+                info: The spherical image file (.hdf5) format
+            nvis:
+                dtype: int
+                default: 1000
+                info: Number of visibilities to use. Memory use is proportional to this.
+            channel:
+                dtype: int
+                default: 0
+                info: The frequency channel to use.
+            field:
+                dtype: int
+                default: 0
+                info: The field to use.
             healpix:
                 dtype: bool
                 default: true
@@ -26,5 +93,8 @@ cabs:
                 dtype: str
                 required: true
                 info: The resolution per pixel use a suffix (deg, arcmin, arcsec)
-
+            multimodel:
+                dtype: bool
+                default: false
+                info: Use a sky model that increases in number of parameters as new sources are added.
 

@@ -4,13 +4,20 @@ Curated cargo of TART radio astronomy packages for stimela 2.0. This allows the 
 
 Author: Tim Molteno
 
+Based on the [tart_tools](https://github.com/tart-telescope/tools) package which does most of the heavy lifting.
+
 ## Installation and Use
 
-Create a virtual environment
+Start with a suitable Linux machine, with apptainer installed. 
+
+then create a python virtual environment
 
     python3 -m venv myvenv
     source myvenv/bin/activate
-    
+    pip install tart_cargo
+
+This should install all the necessary dependencies (including stimela).
+
 Then create a stimela recipe. An example is shown below...
 
 ```
