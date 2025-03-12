@@ -1,6 +1,6 @@
 # tart_cargo
 
-Curated cargo of TART radio astronomy packages for stimela 2.0. This allows the use of TART telescope tools as part of the [stimela 2.0](https://github/caracal-pipeline/stimela) radio astronomy pipeline.
+Curated cargo of TART radio astronomy packages for stimela 2.0. This allows the use of TART telescope tools as part of the [stimela 2.0](https://github.com/caracal-pipeline/stimela/) radio astronomy pipeline.
 
 Author: Tim Molteno
 
