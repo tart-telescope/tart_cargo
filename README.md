@@ -46,10 +46,20 @@ tart-image:
             required: true
             info: "TART name (e.g. mu-udm)"
 
+    outputs:
+        ms:
+            dtype: MS
+            default:  '{current.tart}.ms'
+        hdf:
+            dtype: File
+            default: =STRIPEXT(current.ms) + '-vis.hdf'
+        svg:
+            dtype: File
+            default: =STRIPEXT(current.ms) + '.svg'
+
     assign:
-        api: = 'https://api.elec.ac.nz/tart/{recipe.tart}'
-        hdf: = 'vis_{recipe.tart}.hdf'
-        ms: = '{recipe.tart}.ms'
+        api: 'https://api.elec.ac.nz/tart/{recipe.tart}'
+
 
     steps:
 
@@ -63,7 +73,7 @@ tart-image:
         create-ms:
             cab: tart2ms
             params:
-                hdf: =recipe.hdf
+                hdf: =steps.download-hdf.file
                 ms: =recipe.ms
                 clobber: true
                 single-field: true
@@ -79,11 +89,18 @@ tart-image:
                 res: 0.5deg
                 lasso: true
                 alpha: 0.006
+                l1-ratio: 0.02
 
         project-image:
             cab: disko-draw
             params:
                 hdf: '{recipe.tart}.h5'
                 show-sources: true
-                SVG: '{recipe.tart}.svg'
+                SVG: =recipe.svg
 ```
+
+You can run this recipe as follows:
+
+    stimela run example_recipe.yml tart=mu-udm
+    
+This will download data, and form an image from the specified TART telescope.
