@@ -1,5 +1,5 @@
 [project]
-name = "tartcargo"
+name = "tart_cargo"
 version = "0.1.8"
 description = "Curated cargo of TART radio astronomy packages for stimela 2.0"
 authors = [
@@ -20,6 +20,8 @@ stimela = "^2.0.1.1"
 requests = "^2.0"
 
 [tool.poetry]
+packages = [{include = "tartcargo"}]
+
 
 [tool.poetry.group.dev.dependencies]
 
