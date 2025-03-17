@@ -93,7 +93,7 @@ cabs:
                 info: Include only timestamps before this UTC time, e.g. 2022-03-23T23:30:12
             chunks-out:
                 dtype: int
-                default: 10000
+                required: false
                 info: Chunk sizes to use for MAIN table writeout
             override-ant-pos:
                 dtype: File
