@@ -1,5 +1,7 @@
+TART=mu-udm
+
 test:
-	APPTAINER_TMPDIR=~/tmp stimela run example_recipe.yml tart=mu-udm
+	APPTAINER_TMPDIR=~/tmp stimela run example_recipe.yml tart=${TART}
 
 clean:
 	rm -f *.svg
