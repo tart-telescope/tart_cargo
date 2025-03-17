@@ -12,16 +12,37 @@ cabs:
 
         inputs:
             hdf:
-                dtype: File
+                dtype: List[File]                
                 required: true
                 must_exist: true
                 info: An HDF file downloaded from the TART telescope
+                policies:
+                  repeat: list
             single-field:
                 dtype: bool
                 default: false
                 info: Combine measurement sets into a single field
             rephase:
-                choices: [obs-midpoint, sun]
+                dtype: str
+                required: false
+                default: false
+                info: Rephase all visibilities to a new phase center. 'obs-midpoint' rephases to the zenith at
+                      the observation midpoint for the provided databases. Otherwise another known position can
+                      be given or a twelve digit J2000 epoch coordinate (e.g. J193900-632400). Currently
+                      recognized special positions are - 4C12.03,3C6.1,3C9,3C13,3C14,3C16,3C19,3C20,3C22,3C28,3C31,
+                        3C33,3C33.1,3C34,3C35,3C41,3C42,3C43,3C46,3C47,3C48,3C49,3C55,3C61.1,3C65,3C66B,3C67,
+                        3C68.1,3C68.2,3C76.1,3C79,3C83.1B,3C84,3C98,3C109,4C14.11,3C123,3C132,3C138,3C147,3C153,3C171,
+                        3C172,3C173.1,3C175,3C175.1,3C181,3C184,3C184.1,3C186,DA240,3C190,3C191,3C192,3C196,3C200,
+                        4C14.27,3C204,3C205,3C207,3C208,3C212,3C215,3C217,3C216,3C219,3C220.1,3C220.3,3C223,3C225B,
+                        3C226,4C73.08,3C228,3C231,3C234,3C236,3C239,4C74.16,3C241,3C244.1,3C245,3C247,3C249.1,
+                        3C252,3C254,3C263,3C263.1,3C264,3C265,3C266,3C267,3C268.1,3C268.3,3C268.4,3C270.1,3C272.1,
+                        A1552,3C274,3C274.1,3C275.1,3C277.2,3C280,3C284,3C285,3C287,3C286,3C288,3C289,3C292,3C293,
+                        3C294,3C295,3C296,3C299,3C300,3C303,3C305,3C309.1,3C310,3C314.1,3C315,3C318,3C319,3C321,
+                        3C322,3C324,3C326,3C325,3C330,NGC6109,3C334,3C336,3C341,3C338,3C340,3C337,3C343,3C343.1,
+                        NGC6251,3C346,3C345,3C349,3C351,3C352,3C356,4C16.49,4C13.66,3C368,3C380,3C381,3C382,3C386,3C388,
+                        3C390.3,3C401,3C427.1,3C432,3C433,3C436,3C437,3C438,3C441,3C442A,3C449,3C452,NGC7385,3C454,3C454.3,
+                        3C455,3C457,3C465,3C469.1,3C470,NCP,SCP,SgrA*,FornaxA,Sun,Moon,Mercury,Venus,Mars,
+                        Jupiter,Saturn,Uranus,Neptune           
             clobber:
                 dtype: bool
                 default: false
@@ -30,4 +51,54 @@ cabs:
                 dtype: str
                 required: true
                 info: The name of the measurement set
-
+            debug:
+                dtype: bool
+                default: false
+                info: Make verbose logs and store to a log file
+            uncalibrated:
+                dtype: bool
+                default: false
+                info: Do not apply calibration solutions (store raw data)
+            telescope-name:
+                dtype: str
+                required: false
+                info: Override telescope name with a JPL recognized telescope name - needed for some CASA tasks
+            add-model:
+                dtype: bool
+                default: false
+                info: DFT a model of the GNSS sources into MODEL_DATA if sources are available in the input database
+            write-model-catalog:
+                dtype: bool
+                default: false
+                info: Write a catalog of GNSS sources in Tigger LSM format to the current path. Only of use in combination with --add-model
+            skip-online-source-catalog:
+                dtype: bool
+                default: false
+                info: Skips fetching a catalog of GNSS sources online (not recommended for HDF5 based loading)
+            skip-celestial-source-catalog:
+                dtype: bool
+                default: false
+                info: Skips predicting stronger celestial source prediction from 3CRR, etc. catalogs
+            no-cache:
+                dtype: bool
+                default: false
+                info: Ignores GNSS sources already cached from a previous run
+            timerange-start-utc:
+                dtype: str
+                required: false
+                info: Include only timestamps after this UTC time, e.g. 2022-03-23T21:08:12
+            timerange-end-utc:
+                dtype: str
+                required: false
+                info: Include only timestamps before this UTC time, e.g. 2022-03-23T23:30:12
+            chunks-out:
+                dtype: int
+                required: false
+                info: Chunk sizes to use for MAIN table writeout
+            override-ant-pos:
+                dtype: File
+                must_exist: true
+                required: false
+                info: Overrides antenna positions with external json file, keyed on antenna_positions with list
+                      of ENU tripples. Normally will use the antenna positions stored in the provided h5 or json
+                      files.
