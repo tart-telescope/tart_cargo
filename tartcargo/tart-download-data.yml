@@ -24,7 +24,16 @@ cabs:
                 dtype: bool
                 default: false
             file:
+                dtype: File
+                must_exist: false
+                info: Set the name of the output file
+            dir:
+                dtype: Directory
+                default: false
+                must_exist: true
+                info: local directory to download, default .
+            pw:
                 dtype: str
                 default: false
-                info: Set the name of the output file
+                info: API password, default password
 
