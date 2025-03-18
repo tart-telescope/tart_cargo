@@ -26,20 +26,18 @@ tart-image:
     outputs:
         ms:
             dtype: MS
-            default:  '{current.tart}.ms'
+            default:  '{recipe.tart}.ms'
         hdf:
             dtype: File
-            default: =STRIPEXT(current.ms) + '-vis.hdf'
+            default: '{recipe.tart}-vis.hdf'
         svg:
             dtype: File
-            default: =STRIPEXT(current.ms) + '.svg'
+            default: '{recipe.tart}.svg'
 
     assign:
         api: 'https://api.elec.ac.nz/tart/{recipe.tart}'
 
-
     steps:
-
         download-hdf:
             cab: tart-download-data
             params:
