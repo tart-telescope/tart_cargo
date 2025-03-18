@@ -26,13 +26,13 @@ tart-image:
     outputs:
         ms:
             dtype: MS
-            default:  '{recipe.tart}.ms'
+            default:  '{current.tart}.ms'
         hdf:
             dtype: File
-            default: '{recipe.tart}-vis.hdf'
+            default: '{current.tart}-vis.hdf'
         svg:
             dtype: File
-            default: '{recipe.tart}.svg'
+            default: '{current.tart}.svg'
 
     assign:
         api: 'https://api.elec.ac.nz/tart/{recipe.tart}'
