@@ -20,7 +20,7 @@ cabs:
                   repeat: list
             single-field:
                 dtype: bool
-                default: false
+                required: false
                 info: Combine measurement sets into a single field
             rephase:
                 dtype: str
@@ -45,7 +45,7 @@ cabs:
                         Jupiter,Saturn,Uranus,Neptune           
             clobber:
                 dtype: bool
-                default: false
+                required: false
                 info: overwrite the measurement set if it exists
             ms:
                 dtype: str
@@ -102,3 +102,8 @@ cabs:
                 info: Overrides antenna positions with external json file, keyed on antenna_positions with list
                       of ENU tripples. Normally will use the antenna positions stored in the provided h5 or json
                       files.
+            model-catalog-name-prefix:
+                dtype: str
+                required: false
+                info: Specify model catalog name prefix. Can be used to write model catalogs to another folder. Only effective in combination with --write-model-catalog, default
+                      model_sources_
