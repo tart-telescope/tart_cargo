@@ -1,4 +1,4 @@
-TART=mu-udm
+TART=tart-kenya
 
 test:
 	APPTAINER_TMPDIR=~/tmp stimela run example_recipe.yml tart=${TART}
