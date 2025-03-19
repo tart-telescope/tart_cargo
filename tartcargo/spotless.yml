@@ -49,7 +49,7 @@
 #   --debug               Display debugging information (default: False)
 #   --show-model          Show the location of the model sources. (default: False)
 
-  _include:
+_include:
     - genesis/tart-cargo-base.yml
 
 cabs:

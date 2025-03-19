@@ -12,6 +12,7 @@ _include:
         - tart2ms.yml
         - tart-download-data.yml
         - disko.yml
+        - spotless.yml
         - disko-draw.yml
 
 tart-image:
@@ -58,7 +59,7 @@ tart-image:
             cab: disko
             params:
                 ms: =recipe.ms
-                HDF: '{recipe.tart}-disko.sphere'
+                HDF: ='{recipe.tart}-disko.sphere'
                 healpix: true
                 fov: 170deg
                 res: 0.5deg
@@ -69,15 +70,15 @@ tart-image:
         disko-draw:
             cab: disko-draw
             params:
-                hdf: '{recipe.tart}-disko.sphere'
+                hdf: ='{recipe.tart}-disko.sphere'
                 show-sources: true
-                SVG: 'disko-{recipe.svg}'
+                SVG: ='disko-{recipe.svg}'
 
         spotless-image:
             cab: spotless
             params:
                 ms: =recipe.ms
-                HDF: '{recipe.tart}-spotless.sphere'
+                HDF: ='{recipe.tart}-spotless.sphere'
                 multimodel: true
                 healpix: true
                 fov: 170deg
@@ -86,8 +87,8 @@ tart-image:
         spotless-draw:
             cab: disko-draw
             params:
-                hdf: '{recipe.tart}-disko.sphere'
+                hdf: ='{recipe.tart}-spotless.sphere'
                 show-sources: true
-                SVG: 'spotless-{recipe.svg}'
+                SVG: ='spotless-{recipe.svg}'
 
 
