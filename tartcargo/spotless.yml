@@ -53,7 +53,7 @@
     - genesis/tart-cargo-base.yml
 
 cabs:
-    disko:
+    spotless:
         name: spotless
         image:
             _use: vars.tart-cargo.images
