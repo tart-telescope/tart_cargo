@@ -60,6 +60,7 @@ tart-image:
             params:
                 ms: =recipe.ms
                 HDF: ='{recipe.tart}-disko.sphere'
+                nvis: 10000
                 healpix: true
                 fov: 170deg
                 res: 0.5deg
@@ -79,6 +80,7 @@ tart-image:
             params:
                 ms: =recipe.ms
                 HDF: ='{recipe.tart}-spotless.sphere'
+                nvis: 10000
                 multimodel: true
                 healpix: true
                 fov: 170deg
