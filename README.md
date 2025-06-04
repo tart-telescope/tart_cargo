@@ -8,7 +8,20 @@ Based on the [tart_tools](https://github.com/tart-telescope/tools) package which
 
 ## Installation and Use
 
-Start with a suitable Linux machine, with apptainer installed. 
+You will need a Linux or Windoes computer with [apptainer](https://apptainer.org/), and python installed.
+
+### Linux
+
+Most linux has python preinstalled.. Packages are available for download from apptainer.org. 
+
+### Windows
+
+install the Windows Subsystem for Linux (WSL), open PowerShell as an administrator and run the command ```wsl --install```. This will enable the necessary features and install the default Linux distribution, which is usually Ubuntu. 
+
+To install pip on WSL, first ensure that Python is installed by running ```sudo apt install python3```. Then, install pip using the command ```sudo apt install python3-pip``.
+
+
+## Use of tart_cargo
 
 then create a python virtual environment
 
