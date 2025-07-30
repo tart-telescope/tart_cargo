@@ -32,16 +32,16 @@ tart-movie:
             default: -1
             info: "Number of files to download (-1 means all)"
 
-    outputs:
-        ms:
-            dtype: MS
-            default:  '{current.tart}.ms'
-        hdf:
-            dtype: File
-            default: '{current.tart}-vis.hdf'
-        svg:
-            dtype: File
-            default: '{current.tart}.svg'
+    # outputs:
+    #     ms:
+    #         dtype: MS
+    #         default:  '{current.tart}.ms'
+    #     hdf:
+    #         dtype: File
+    #         default: '{current.tart}-vis.hdf'
+    #     svg:
+    #         dtype: File
+    #         default: '{current.tart}.svg'
 
     assign:
         api: 'https://api.elec.ac.nz/tart/{recipe.tart}'
@@ -87,7 +87,7 @@ loop-make-images:
     for_loop:
         var: hdf-file
         over: hdf-files
-        scatter: 3
+        # scatter: 1
     steps:
 
         create-ms:
