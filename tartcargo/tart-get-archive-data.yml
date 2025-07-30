@@ -1,0 +1,35 @@
+_include:
+    - genesis/tart-cargo-base.yml
+
+cabs:
+    tart-get-archive-data:
+        image:
+            _use: vars.tart-cargo.images
+            name: tools
+        command: tart_get_archive_data
+        info: Download data from the TART telescope archive
+        inputs:
+            target:
+                dtype: str
+                required: true
+                info: The name of the TART.(e.g. mu-udm)
+            dir:
+                dtype: Directory
+                must_exist: false
+                info: 'Output directory (default: .)'
+            name:
+                dtype: str
+                default: 'data'
+                must_exist: true
+                info: "Output file name prefix - eg 'out_' would produce files 'out_1.hdf', out_2.hdf"
+            n:
+                dtype: int
+                required: false
+                info: "Number of HDF vis files. (-1 means all) (default: -1)"
+            start:
+                dtype: str
+                must_exist: false
+                info: "Start time (negative means offset from now). (default: -60)"
+            duration:
+                dtype: str
+                info: "Number of minutes to sample for (default: -60)"

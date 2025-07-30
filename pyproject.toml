@@ -1,6 +1,6 @@
 [project]
 name = "tart_cargo"
-version = "0.2.7"
+version = "0.3.0"
 description = "Curated cargo of TART radio astronomy packages for stimela 2.0"
 authors = [
     {name = "Tim Molteno",email = "tim@elec.ac.nz"}
@@ -9,11 +9,6 @@ license = {text = "MIT"}
 readme = "README.md"
 requires-python = "<4.0,>=3.8"
 
-# [tool.setuptools]
-# packages = [{include = "tartcargo"}]
-#
-# [tool.setuptools.package-dir]
-# tartcargo = "tartcargo"
 
 [tool.poetry.dependencies]
 stimela = "^2.0.1.1"

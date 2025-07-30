@@ -1,0 +1,134 @@
+#!/usr/bin/env -S stimela run -l
+# This basic TART Stimela 2.0 processing pipeline
+opts:
+    log:
+        dir: logs/log-{config.run.datetime}
+        name: log-{info.fqname}
+        nest: 2
+        symlink: log
+
+_include:
+    - (tartcargo):
+        - tart2ms.yml
+        - tart-get-archive-data.yml
+        - disko.yml
+        - spotless.yml
+        - disko-draw.yml
+
+tart-movie:
+    info: TART imaging using stimela
+
+    inputs:
+        tart:
+            dtype: str
+            required: true
+            info: "TART name (e.g. mu-udm)"
+        duration:
+            dtype: int
+            default: 60
+            info: "How long to sample for (minutes)"
+        n:
+            dtype: int
+            default: -1
+            info: "Number of files to download (-1 means all)"
+
+    outputs:
+        ms:
+            dtype: MS
+            default:  '{current.tart}.ms'
+        hdf:
+            dtype: File
+            default: '{current.tart}-vis.hdf'
+        svg:
+            dtype: File
+            default: '{current.tart}.svg'
+
+    assign:
+        api: 'https://api.elec.ac.nz/tart/{recipe.tart}'
+        data-dir: "data_{recipe.tart}"
+
+    steps:
+        download-data:
+            cab: tart-get-archive-data
+            params:
+                target: =recipe.tart
+                dir: =recipe.data-dir
+                start: "-{recipe.duration}"
+                duration: "{recipe.duration}"
+
+        create-ms:
+            cab: tart2ms
+            params:
+                hdf: =steps.download-hdf.file
+                ms: =recipe.ms
+                clobber: true
+                single-field: true
+                # rephase: obs-midpoint
+
+        create_images:
+            recipe: loop-make-images
+            params:
+                hdf-files: =GLOB("{recipe.data-dir}*.hdf")
+
+
+loop-make-images:
+    info: "Make all images"
+    inputs:
+        hdf-files: List[str]
+        target-indices: List[int]
+    assign:
+        ms: =BASENAME(recipe.hdf-file) + ".ms"
+
+    for_loop:
+        var: hdf-file
+        over: hdf-files
+    steps:
+
+        create-ms:
+            cab: tart2ms
+            params:
+                hdf: =recipe.hdf-file
+                ms: =recipe.ms
+                clobber: true
+                single-field: true
+                rephase: obs-midpoint
+        #
+        # disko-image:
+        #     cab: disko
+        #     params:
+        #         ms: =recipe.ms
+        #         HDF: ='{recipe.tart}-disko.sphere'
+        #         nvis: 10000
+        #         healpix: true
+        #         fov: 170deg
+        #         res: 0.5deg
+        #         lasso: true
+        #         alpha: 0.006
+        #         l1-ratio: 0.02
+        #
+        # disko-draw:
+        #     cab: disko-draw
+        #     params:
+        #         hdf: ='{recipe.tart}-disko.sphere'
+        #         show-sources: true
+        #         SVG: ='disko-{recipe.svg}'
+        #
+        # spotless-image:
+        #     cab: spotless
+        #     params:
+        #         ms: =recipe.ms
+        #         HDF: ='{recipe.tart}-spotless.sphere'
+        #         nvis: 10000
+        #         multimodel: true
+        #         healpix: true
+        #         fov: 170deg
+        #         res: 0.5deg
+        #
+        # spotless-draw:
+        #     cab: disko-draw
+        #     params:
+        #         hdf: ='{recipe.tart}-spotless.sphere'
+        #         show-sources: true
+        #         SVG: ='spotless-{recipe.svg}'
+        #
+        #
