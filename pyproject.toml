@@ -7,7 +7,7 @@ authors = [
 ]
 license = {text = "MIT"}
 readme = "README.md"
-requires-python = "<4.0,>=3.8"
+requires-python = "<4.0,>=3.9"
 
 
 [tool.poetry.dependencies]

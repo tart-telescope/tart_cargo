@@ -50,42 +50,49 @@ tart-movie:
     steps:
         download-data:
             cab: tart-get-archive-data
+            skip: =EXISTS(recipe.data-dir)
             params:
                 target: =recipe.tart
                 dir: =recipe.data-dir
                 start: "-{recipe.duration}"
                 duration: "{recipe.duration}"
 
-        create-ms:
-            cab: tart2ms
-            params:
-                hdf: =steps.download-hdf.file
-                ms: =recipe.ms
-                clobber: true
-                single-field: true
-                # rephase: obs-midpoint
+        # create-ms:
+        #     cab: tart2ms
+        #     params:
+        #         hdf: =steps.download-hdf.file
+        #         ms: =recipe.ms
+        #         clobber: true
+        #         single-field: true
+        #         # rephase: obs-midpoint
 
         create_images:
             recipe: loop-make-images
             params:
-                hdf-files: =GLOB("{recipe.data-dir}*.hdf")
+                hdf-files: =GLOB("{recipe.data-dir}/obs_*.hdf")
 
 
 loop-make-images:
     info: "Make all images"
     inputs:
         hdf-files: List[str]
-        target-indices: List[int]
+
     assign:
-        ms: =BASENAME(recipe.hdf-file) + ".ms"
+        base:  =STRIPEXT(recipe.hdf-file)
+        ms:  "{recipe.base}.ms"
+        sphere: "{recipe.base}.spotless.sphere"
+        svg: "{recipe.base}.svg"
+        png: "{recipe.base}.png"
 
     for_loop:
         var: hdf-file
         over: hdf-files
+        scatter: 3
     steps:
 
         create-ms:
             cab: tart2ms
+            skip: =EXISTS(recipe.ms)
             params:
                 hdf: =recipe.hdf-file
                 ms: =recipe.ms
@@ -113,22 +120,25 @@ loop-make-images:
         #         show-sources: true
         #         SVG: ='disko-{recipe.svg}'
         #
-        # spotless-image:
-        #     cab: spotless
-        #     params:
-        #         ms: =recipe.ms
-        #         HDF: ='{recipe.tart}-spotless.sphere'
-        #         nvis: 10000
-        #         multimodel: true
-        #         healpix: true
-        #         fov: 170deg
-        #         res: 0.5deg
-        #
-        # spotless-draw:
-        #     cab: disko-draw
-        #     params:
-        #         hdf: ='{recipe.tart}-spotless.sphere'
-        #         show-sources: true
-        #         SVG: ='spotless-{recipe.svg}'
-        #
+        spotless-image:
+            cab: spotless
+            skip: =EXISTS(recipe.sphere)
+            params:
+                ms: =recipe.ms
+                HDF: =recipe.sphere
+                nvis: 10000
+                multimodel: true
+                healpix: true
+                fov: 170deg
+                res: 0.5deg
+
+        spotless-draw:
+            cab: disko-draw
+            skip: =EXISTS(recipe.png)
+            params:
+                hdf: =recipe.sphere
+                show-sources: true
+                SVG: =recipe.svg
+                PNG: =recipe.png
+
         #

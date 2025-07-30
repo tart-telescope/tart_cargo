@@ -42,6 +42,21 @@ cabs:
                 dtype: bool
                 default: false
                 info: "Display the known sources in the field"
+            elevation:
+                dtype: float
+                info: "Elevation limit for displaying sources (degrees). (default: 20.0)"
+            max:
+                dtype: float
+                info: "Upper end of image range (-1 means calculate) (default: -1)"
+            min:
+                dtype: float
+                info: "Lower end of image range (-1 means calculate) (default: -1)"
             SVG:
                 dtype: str
                 info: "The name of the SVG output file"
+            PNG:
+                dtype: str
+                info: "The name of the PNG output file"
+            PDF:
+                dtype: str
+                info: "The name of the PDF output file"
