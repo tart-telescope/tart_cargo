@@ -41,6 +41,7 @@ tart-image:
     steps:
         download-hdf:
             cab: tart-download-data
+            skip: =EXISTS(recipe.hdf)
             params:
                 api: =recipe.api
                 vis: true
@@ -48,6 +49,7 @@ tart-image:
 
         create-ms:
             cab: tart2ms
+            skip: =EXISTS(recipe.ms)
             params:
                 hdf: =steps.download-hdf.file
                 ms: =recipe.ms
@@ -73,6 +75,7 @@ tart-image:
             params:
                 hdf: ='{recipe.tart}-disko.sphere'
                 show-sources: true
+                scale-mad: true
                 SVG: ='disko-{recipe.svg}'
 
         spotless-image:
@@ -91,6 +94,7 @@ tart-image:
             params:
                 hdf: ='{recipe.tart}-spotless.sphere'
                 show-sources: true
+                scale-mad: true
                 SVG: ='spotless-{recipe.svg}'
 
 
