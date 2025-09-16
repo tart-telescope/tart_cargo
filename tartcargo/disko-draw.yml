@@ -45,6 +45,9 @@ cabs:
             elevation:
                 dtype: float
                 info: "Elevation limit for displaying sources (degrees). (default: 20.0)"
+            scale-mad:
+                dtype: bool
+                info: "Scale the image to the median absolute deviatoin (default: false)"
             max:
                 dtype: float
                 info: "Upper end of image range (-1 means calculate) (default: -1)"

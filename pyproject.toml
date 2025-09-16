@@ -1,6 +1,6 @@
 [project]
 name = "tart_cargo"
-version = "0.3.3"
+version = "0.3.4"
 description = "Curated cargo of TART radio astronomy packages for stimela 2.0"
 authors = [
     {name = "Tim Molteno",email = "tim@elec.ac.nz"}
