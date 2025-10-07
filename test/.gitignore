@@ -5,4 +5,7 @@
 *.txt
 *.full
 logs/**
+data**
 *.hdf
+*.json
+*.sphere
