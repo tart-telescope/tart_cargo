@@ -1,0 +1,54 @@
+_include:
+    - genesis/tart-cargo-base.yml
+
+cabs:
+    tartball:
+        name: tartball
+        image:
+            _use: vars.tart-cargo.images
+            name: tartball
+            version: 0.1.1
+        command: tartball
+        info: Simulate TART data from a measurement set.
+
+        inputs:
+            ms:
+                dtype: str
+                required: true
+                info: The name of the measurement set
+            debug:
+                dtype: bool
+                default: false
+                info: Make verbose logs and store to a log file
+            add-model:
+                dtype: bool
+                default: false
+                info: DFT a model of the GNSS sources into MODEL_DATA if sources are available in the input database
+            write-model-catalog:
+                dtype: bool
+                default: false
+                info: Write a catalog of GNSS sources in Tigger LSM format to the current path. Only of use in combination with --add-model
+            skip-online-source-catalog:
+                dtype: bool
+                default: false
+                info: Skips fetching a catalog of GNSS sources online (not recommended for HDF5 based loading)
+            skip-celestial-source-catalog:
+                dtype: bool
+                default: false
+                info: Skips predicting stronger celestial source prediction from 3CRR, etc. catalogs
+            no-cache:
+                dtype: bool
+                default: false
+                info: Ignores GNSS sources already cached from a previous run
+            override-ant-pos:
+                dtype: File
+                must_exist: true
+                required: false
+                info: Overrides antenna positions with external json file, keyed on antenna_positions with list
+                      of ENU tripples. Normally will use the antenna positions stored in the provided h5 or json
+                      files.
+            model-catalog-name-prefix:
+                dtype: str
+                required: false
+                info: Specify model catalog name prefix. Can be used to write model catalogs to another folder. Only effective in combination with --write-model-catalog, default
+                      model_sources_

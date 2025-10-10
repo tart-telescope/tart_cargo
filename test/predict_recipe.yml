@@ -1,0 +1,59 @@
+#!/usr/bin/env -S stimela run -l
+# This basic TART Stimela 2.0 processing pipeline
+opts:
+    log:
+        dir: logs/log-{config.run.datetime}
+        name: log-{info.fqname}
+        nest: 2
+        symlink: log
+
+_include:
+    - (tartcargo):
+        - tart2ms.yml
+        - tart-download-data.yml
+        - tartball.yml
+
+tart-image:
+    info: TART imaging using stimela
+
+    inputs:
+        tart:
+            dtype: str
+            required: true
+            info: "TART name (e.g. mu-udm)"
+
+    outputs:
+        ms:
+            dtype: MS
+            default:  '{current.tart}.ms'
+        hdf:
+            dtype: File
+            default: '{current.tart}-vis.hdf'
+
+    assign:
+        api: 'https://api.elec.ac.nz/tart/{recipe.tart}'
+
+    steps:
+        download-hdf:
+            cab: tart-download-data
+            skip: =EXISTS(recipe.hdf)
+            params:
+                api: =recipe.api
+                vis: true
+                file: =recipe.hdf
+
+        create-ms:
+            cab: tart2ms
+            skip: =EXISTS(recipe.ms)
+            params:
+                hdf: =steps.download-hdf.file
+                ms: =recipe.ms
+                clobber: true
+                single-field: true
+                rephase: obs-midpoint
+
+        predict:
+            cab: tartball
+            params:
+                ms: =recipe.ms
+
