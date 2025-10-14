@@ -12,7 +12,9 @@ You will need a Linux or Windoes computer with [apptainer](https://apptainer.org
 
 ### Linux
 
-Most linux has python preinstalled.. Packages are available for download from apptainer.org. 
+Most linux has python preinstalled.. Packages are available for download from apptainer.org. On recent debian
+
+    apt install apptainer squashfuse fuse2fs gocryptfs
 
 ### Windows
 
