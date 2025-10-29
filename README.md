@@ -8,15 +8,27 @@ Based on the [tart_tools](https://github.com/tart-telescope/tools) package which
 
 ## Installation and Use
 
-You will need a Linux or Windoes computer with [apptainer](https://apptainer.org/), and python installed.
+### GitHub Codespaces (Easiest)
 
-### Linux
+The easiest way to get started is using GitHub Codespaces, which provides a pre-configured development environment in your browser:
+
+1. Click the green "Code" button on the GitHub repository page
+2. Select the "Codespaces" tab
+3. Click "Create codespace on main" (or your desired branch)
+
+The codespace will automatically set up Ubuntu with Python 3.12, Apptainer, and all required dependencies. Once ready, you can run tart-cargo directly in the terminal.
+
+### Local Installation
+
+You will need a Linux or Windows computer with [apptainer](https://apptainer.org/), and python installed.
+
+#### Linux
 
 Most linux has python preinstalled.. Packages are available for download from apptainer.org. On recent debian
 
     apt install apptainer squashfuse fuse2fs gocryptfs
 
-### Windows
+#### Windows
 
 install the Windows Subsystem for Linux (WSL), open PowerShell as an administrator and run the command ```wsl --install```. This will enable the necessary features and install the default Linux distribution, which is usually Ubuntu. 
 
