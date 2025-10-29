@@ -20,7 +20,7 @@ The codespace will automatically set up Ubuntu with Python 3.12, Apptainer, and 
 
 ### Local Installation
 
-You will need a Linux or Windoes computer with [apptainer](https://apptainer.org/), and python installed.
+You will need a Linux or Windows computer with [apptainer](https://apptainer.org/), and python installed.
 
 #### Linux
 
