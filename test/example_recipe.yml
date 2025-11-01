@@ -57,6 +57,25 @@ tart-image:
                 single-field: true
                 rephase: obs-midpoint
 
+        spotless-image:
+            cab: spotless
+            params:
+                ms: =recipe.ms
+                HDF: ='{recipe.tart}-spotless.sphere'
+                nvis: 10000
+                multimodel: true
+                healpix: true
+                fov: 170deg
+                res: 0.5deg
+
+        spotless-draw:
+            cab: disko-draw
+            params:
+                hdf: ='{recipe.tart}-spotless.sphere'
+                show-sources: true
+                scale-mad: true
+                SVG: ='spotless-{recipe.svg}'
+
         disko-image:
             cab: disko
             params:
@@ -77,24 +96,4 @@ tart-image:
                 show-sources: true
                 scale-mad: true
                 SVG: ='disko-{recipe.svg}'
-
-        spotless-image:
-            cab: spotless
-            params:
-                ms: =recipe.ms
-                HDF: ='{recipe.tart}-spotless.sphere'
-                nvis: 10000
-                multimodel: true
-                healpix: true
-                fov: 170deg
-                res: 0.5deg
-
-        spotless-draw:
-            cab: disko-draw
-            params:
-                hdf: ='{recipe.tart}-spotless.sphere'
-                show-sources: true
-                scale-mad: true
-                SVG: ='spotless-{recipe.svg}'
-
 

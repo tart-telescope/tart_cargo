@@ -15,6 +15,10 @@ cabs:
                 dtype: MS
                 required: true
                 info: The measurement set
+            column:
+                dtype: str
+                default: DATA
+                info: The measurement set column to image
             nvis:
                 dtype: int
                 default: 1000

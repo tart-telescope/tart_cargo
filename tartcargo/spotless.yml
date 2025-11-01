@@ -66,6 +66,10 @@ cabs:
                 dtype: MS
                 required: true
                 info: The measurement set
+            column:
+                dtype: str
+                default: DATA
+                info: The measurement set column to image
             HDF:
                 dtype: str
                 required: true
