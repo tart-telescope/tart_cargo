@@ -57,6 +57,29 @@ tart-image:
                 single-field: true
                 rephase: obs-midpoint
 
+
+        disko-image:
+            cab: disko
+            params:
+                ms: =recipe.ms
+                column: DATA
+                HDF: ='{recipe.tart}-disko.sphere'
+                nvis: 10000
+                healpix: true
+                fov: 170deg
+                res: 0.5deg
+                lasso: true
+                alpha: 0.006
+                l1-ratio: 0.02
+
+        disko-draw:
+            cab: disko-draw
+            params:
+                hdf: ='{recipe.tart}-disko.sphere'
+                show-sources: true
+                scale-mad: true
+                SVG: ='disko-{recipe.svg}'
+
         spotless-image:
             cab: spotless
             params:
@@ -75,25 +98,3 @@ tart-image:
                 show-sources: true
                 scale-mad: true
                 SVG: ='spotless-{recipe.svg}'
-
-        disko-image:
-            cab: disko
-            params:
-                ms: =recipe.ms
-                HDF: ='{recipe.tart}-disko.sphere'
-                nvis: 10000
-                healpix: true
-                fov: 170deg
-                res: 0.5deg
-                lasso: true
-                alpha: 0.006
-                l1-ratio: 0.02
-
-        disko-draw:
-            cab: disko-draw
-            params:
-                hdf: ='{recipe.tart}-disko.sphere'
-                show-sources: true
-                scale-mad: true
-                SVG: ='disko-{recipe.svg}'
-
