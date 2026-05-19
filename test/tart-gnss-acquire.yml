@@ -1,0 +1,51 @@
+#!/usr/bin/env -S stimela run -l
+# This basic TART Stimela 2.0 processing pipeline
+opts:
+    log:
+        dir: logs/log-{config.run.datetime}
+        name: log-{info.fqname}
+        nest: 2
+        symlink: log
+
+_include:
+    - (tartcargo):
+        - tart-download-data.yml
+        - tart-gnss-acquire.yml
+
+gnss-acquire:
+    info: TART imaging using stimela
+
+    inputs:
+        tart:
+            dtype: str
+            required: true
+            info: "TART name (e.g. mu-udm)"
+
+    outputs:
+        sv:
+            dtype: File
+            default:  '{current.tart}-acquire.json'
+        hdf:
+            dtype: File
+            default: '{current.tart}-raw.hdf'
+
+    assign:
+        api: 'https://api.elec.ac.nz/tart/{recipe.tart}'
+
+    steps:
+        download-raw:
+            cab: tart-download-data
+            skip: =EXISTS(recipe.hdf)
+            params:
+                api: =recipe.api
+                raw: true
+                file: =recipe.hdf
+
+        acquire-gnss:
+            cab: tart-gnss-acquire
+            params:
+                file: =steps.download-raw.file
+                output: =recipe.sv
+                beidou: true
+                filter-phase-mad: 0.1
+

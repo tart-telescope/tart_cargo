@@ -1,0 +1,36 @@
+_include:
+    - genesis/tart-cargo-base.yml
+
+cabs:
+    tart-gnss-acquire:
+        image:
+            _use: vars.tart-cargo.images
+            name: tools
+        command: tart-gnss-acquire
+        info: Calculate signal strengths, phases and doppler offsets for GPS, Galilea, Beidou and SBAS constellations
+        inputs:
+            file:
+                dtype: File
+                required: true
+                info: A raw data file in .hdf format, downloaded from a TART
+            gps:
+                dtype: bool
+            galileo:
+                dtype: bool
+            beidou:
+                dtype: bool
+            sbas:
+                dtype: bool
+            all:
+                dtype: bool
+            filter-freq-mad:
+                dtype: float
+                info: Ignore satellites with a Doppler Median Absolute Deviation greater than this value.
+            filter-phase-mad:
+                dtype: float
+                info: Ignore satellites with a Phase Median Absolute Deviation greater than this value.
+            output:
+                dtype: File
+                must_exist: false
+                info: Set the name of the JSON output file
+
