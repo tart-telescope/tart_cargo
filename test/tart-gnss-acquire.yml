@@ -1,5 +1,6 @@
 #!/usr/bin/env -S stimela run -l
-# This basic TART Stimela 2.0 processing pipeline
+# This basic TART Stimela 2.0 processing pipeline that sets the TART into raw mode long enough to acquire some raw data. then
+# sets it back to vis mode.
 opts:
     log:
         dir: logs/log-{config.run.datetime}
@@ -11,6 +12,19 @@ _include:
     - (tartcargo):
         - tart-download-data.yml
         - tart-gnss-acquire.yml
+        - tart-set-mode.yml
+
+cabs:
+    sleep:
+        info: Wait a few seconds
+        flavour:
+            kind: python-code
+        command: |
+            import time
+            time.sleep(5)
+        inputs:
+            seconds: float
+
 
 gnss-acquire:
     info: TART imaging using stimela
@@ -20,6 +34,10 @@ gnss-acquire:
             dtype: str
             required: true
             info: "TART name (e.g. mu-udm)"
+        pw:
+            dtype: str
+            required: true
+            info: "TART password"
 
     outputs:
         sv:
@@ -33,6 +51,24 @@ gnss-acquire:
         api: 'https://api.elec.ac.nz/tart/{recipe.tart}'
 
     steps:
+
+        set-raw-mode:
+            cab: tart-set-mode
+            params:
+                api: =recipe.api
+                pw: =recipe.pw
+                raw: true
+
+        pause:
+            cab: sleep
+
+        set-vis-mode:
+            cab: tart-set-mode
+            params:
+                api: =recipe.api
+                pw: =recipe.pw
+                vis: true
+
         download-raw:
             cab: tart-download-data
             skip: =EXISTS(recipe.hdf)
@@ -41,11 +77,12 @@ gnss-acquire:
                 raw: true
                 file: =recipe.hdf
 
+
         acquire-gnss:
             cab: tart-gnss-acquire
             params:
                 file: =steps.download-raw.file
                 output: =recipe.sv
-                beidou: true
+                all: true
                 filter-phase-mad: 0.1
 

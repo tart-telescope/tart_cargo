@@ -1,0 +1,28 @@
+_include:
+    - genesis/tart-cargo-base.yml
+
+cabs:
+    tart-set-mode:
+        image:
+            _use: vars.tart-cargo.images
+            name: tools
+        command: tart_set_mode
+        info: Change the mode of a TART telescope
+        inputs:
+            api:
+                dtype: str
+                required: true
+                info: The API url for the TART. Usually something like https://api.elec.ac.nz/tart/mu-udm
+            pw:
+                dtype: str
+                required: true
+                info: API password, default password
+            raw:
+                dtype: bool
+            vis:
+                dtype: bool
+            mode:
+                dtype: str
+                must_exist: true
+                info: local directory to download, default .
+
