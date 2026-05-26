@@ -53,6 +53,7 @@ gnss-acquire:
     steps:
 
         set-raw-mode:
+            skip: =EXISTS(recipe.hdf)
             cab: tart-set-mode
             params:
                 api: =recipe.api
@@ -60,9 +61,11 @@ gnss-acquire:
                 raw: true
 
         pause:
+            skip: =EXISTS(recipe.hdf)
             cab: sleep
 
         set-vis-mode:
+            skip: =EXISTS(recipe.hdf)
             cab: tart-set-mode
             params:
                 api: =recipe.api
@@ -84,5 +87,7 @@ gnss-acquire:
                 file: =steps.download-raw.file
                 output: =recipe.sv
                 all: true
+                # ant: 0
+                cn0: true
                 filter-phase-mad: 0.1
 

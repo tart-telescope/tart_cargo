@@ -40,6 +40,9 @@ cabs:
             prn:
                 dtype: List[int]
                 info: Only use the specified list of PRN numbers in the search.
+            ant:
+                dtype: int
+                info: Only use the specified antenna in the search.
             filter-freq-mad:
                 dtype: float
                 info: Ignore satellites with a Doppler Median Absolute Deviation greater than this value.
