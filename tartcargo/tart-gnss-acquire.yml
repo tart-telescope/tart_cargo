@@ -15,14 +15,31 @@ cabs:
                 info: A raw data file in .hdf format, downloaded from a TART
             gps:
                 dtype: bool
+                info: Acquire the GPS L1 C/A signal
             galileo:
                 dtype: bool
+                info: Acquire the Galileo L1 signal
             beidou:
                 dtype: bool
+                info: Acquire the Beidou L1 signal
             sbas:
                 dtype: bool
+                info: Acquire the SBAS L1 signal
+            qzss:
+                dtype: bool
+                info: Acquire the QZSS L1 signal
+            l1c:
+                dtype: bool
+                info: Acquire the GPS L1C signal
             all:
                 dtype: bool
+                info: Acquire the all the signals in the L1 band
+            cn0:
+                dtype: bool
+                info:  With C/N0 estimation (slow, using the ABS method)
+            prn:
+                dtype: List[int]
+                info: Only use the specified list of PRN numbers in the search.
             filter-freq-mad:
                 dtype: float
                 info: Ignore satellites with a Doppler Median Absolute Deviation greater than this value.
