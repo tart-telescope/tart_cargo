@@ -39,10 +39,14 @@ cabs:
                 info:  With C/N0 estimation (slow, using the ABS method)
             prn:
                 dtype: List[int]
+                policies:
+                    repeat: ','
                 info: Only use the specified list of PRN numbers in the search.
             ant:
-                dtype: int
-                info: Only use the specified antenna in the search.
+                dtype: List[int]
+                policies:
+                    repeat: ','
+                info: Only use the specified antennas in the search.
             filter-freq-mad:
                 dtype: float
                 info: Ignore satellites with a Doppler Median Absolute Deviation greater than this value.
