@@ -86,8 +86,8 @@ gnss-acquire:
             params:
                 file: =steps.download-raw.file
                 output: =recipe.sv
-                all: true
-                # ant: 0
+                gps: true
+                prn: [20,23]
                 cn0: true
                 filter-phase-mad: 0.1
 
