@@ -25,7 +25,6 @@ cabs:
             rephase:
                 dtype: str
                 required: false
-                default: false
                 info: Rephase all visibilities to a new phase center. 'obs-midpoint' rephases to the zenith at
                       the observation midpoint for the provided databases. Otherwise another known position can
                       be given or a twelve digit J2000 epoch coordinate (e.g. J193900-632400). Currently
