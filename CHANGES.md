@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.4.4 (unreleased)
+## 0.4.5
+
+- Bump tools image to v1.1.9
+
+## 0.4.4
 
 - Migrate from Poetry to uv for package management
 - Update CI pipeline to use `uv build` instead of `poetry build`
