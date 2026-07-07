@@ -1,0 +1,22 @@
+# tart_cargo developer notes
+
+## Validating yml commands against Docker images
+
+The `tartcargo/*.yml` files reference executable commands that must exist inside the
+corresponding Docker images. When bumping image versions, verify every `command` field
+resolves:
+
+```bash
+# tools image (v1.1.8)
+docker run --rm --entrypoint "" ghcr.io/tart-telescope/tools:v1.1.8 sh -c \
+  'for cmd in tart_download_data tart_get_archive_data tart_set_mode tart2ms \
+              tart-gnss-acquire disko disko_draw spotless; do
+     printf "%-30s " "$cmd"; which "$cmd" 2>&1 || echo "MISSING"
+   done'
+
+# tartball image (0.1.1)
+docker run --rm --entrypoint "" ghcr.io/tart-telescope/tartball:0.1.1 sh -c \
+  'which tartball'
+```
+
+Last validated: 2026-07-07 against tools:v1.1.8 and tartball:0.1.1 — all present.
