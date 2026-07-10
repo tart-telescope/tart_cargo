@@ -7,48 +7,70 @@ cabs:
         image:
             _use: vars.tart-cargo.images
             name: tartball
-            version: 0.1.1
+            version: 0.3.1
         command: tartball
-        info: Simulate TART data from a measurement set.
+        info: Predict visibilities from a sky model using the DiSkO healpix telescope operator.
 
         inputs:
+            model:
+                dtype: File
+                required: true
+                must_exist: true
+                info: Path to sky model JSON file (az/el sources with fluxes).
             ms:
                 dtype: str
-                required: true
-                info: The name of the measurement set
+                default: tartball.ms
+                info: Output measurement set name.
+            api:
+                dtype: str
+                required: false
+                info: TART telescope API URL for info and antenna positions.
+            info:
+                dtype: File
+                required: false
+                must_exist: true
+                info: Path to JSON telescope info file (alternative to api).
+            antenna-positions:
+                dtype: File
+                required: false
+                must_exist: true
+                info: Path to JSON antenna positions file (alternative to api).
+            gains:
+                dtype: File
+                required: false
+                must_exist: true
+                info: Path to JSON calibration gains file (optional; unity gains if omitted).
+            fov:
+                dtype: str
+                default: 180deg
+                info: Field of view (e.g. 10deg, 30arcmin, 180deg).
+            res:
+                dtype: str
+                default: 2deg
+                info: Maximum resolution of the sky (e.g. 1deg, 30arcmin, 2arcmin).
+            nside:
+                dtype: int
+                required: false
+                info: Healpix nside parameter (overrides fov/res for pixel count).
+            noise:
+                dtype: float
+                default: 0.0
+                info: Standard deviation of additive complex Gaussian noise.
+            beam:
+                dtype: File
+                required: false
+                must_exist: true
+                info: Path to beam JSON file, or 'tart' for the built-in TART beam pattern.
+            clobber:
+                dtype: bool
+                default: false
+                info: Overwrite output MS if it exists.
             debug:
                 dtype: bool
                 default: false
-                info: Make verbose logs and store to a log file
-            add-model:
-                dtype: bool
-                default: false
-                info: DFT a model of the GNSS sources into MODEL_DATA if sources are available in the input database
-            write-model-catalog:
-                dtype: bool
-                default: false
-                info: Write a catalog of GNSS sources in Tigger LSM format to the current path. Only of use in combination with --add-model
-            skip-online-source-catalog:
-                dtype: bool
-                default: false
-                info: Skips fetching a catalog of GNSS sources online (not recommended for HDF5 based loading)
-            skip-celestial-source-catalog:
-                dtype: bool
-                default: false
-                info: Skips predicting stronger celestial source prediction from 3CRR, etc. catalogs
-            no-cache:
-                dtype: bool
-                default: false
-                info: Ignores GNSS sources already cached from a previous run
-            override-ant-pos:
-                dtype: File
-                must_exist: true
-                required: false
-                info: Overrides antenna positions with external json file, keyed on antenna_positions with list
-                      of ENU tripples. Normally will use the antenna positions stored in the provided h5 or json
-                      files.
-            model-catalog-name-prefix:
-                dtype: str
-                required: false
-                info: Specify model catalog name prefix. Can be used to write model catalogs to another folder. Only effective in combination with --write-model-catalog, default
-                      model_sources_
+                info: Enable debug logging.
+
+        outputs:
+            ms:
+                dtype: MS
+                info: Output measurement set with predicted visibilities in the DATA column.
