@@ -21,6 +21,13 @@ docker run --rm --entrypoint "" ghcr.io/tart-telescope/tartball:0.1.1 sh -c \
 
 Last validated: 2026-07-07 against tools:v1.1.8 and tartball:0.1.1 — all present.
 
+## Image version policy
+
+`tartcargo/genesis/tart-cargo-base.yml` sets the default image version for all cabs.
+Its `version` field must only be bumped when `ghcr.io/tart-telescope/tools` has a new
+tag. After bumping, re-run the validation commands above to confirm all executables are
+present in the new image.
+
 ## Release process
 
 1. Bump the version in `pyproject.toml`

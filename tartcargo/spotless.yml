@@ -78,7 +78,6 @@ cabs:
                 info: Use a local JSON file containing the visibilities to create the image
             column:
                 dtype: str
-                default: DATA
                 info: The measurement set column to image
             HDF:
                 dtype: str
@@ -86,28 +85,22 @@ cabs:
                 info: Generate an HDF format representation of the field of view
             nvis:
                 dtype: int
-                default: 1000
                 info: Number of visibilities to use
             channel:
                 dtype: int
-                default: 0
                 info: The frequency channel to use
             field:
                 dtype: int
-                default: 0
                 info: The field to use
             ddid:
                 dtype: int
-                default: 0
                 info: The DDID from the measurement set
             dir:
                 dtype: Directory
-                default: .
                 must_exist: false
                 info: Output directory
             healpix:
                 dtype: bool
-                default: false
                 info: Use HealPix tiling
             nside:
                 dtype: int
@@ -115,19 +108,15 @@ cabs:
                 info: Healpix nside parameter for display purposes only
             fov:
                 dtype: str
-                default: 180deg
                 info: The field of view use a suffix (deg, arcmin, arcsec)
             res:
                 dtype: str
-                default: 2deg
                 info: The resolution per pixel use a suffix (deg, arcmin, arcsec)
             mesh:
                 dtype: bool
-                default: false
                 info: Use a non-structured mesh in the image space
             adaptive:
                 dtype: int
-                default: 0
                 info: Use N cycles of adaptive meshing
             res-min:
                 dtype: str
@@ -135,58 +124,44 @@ cabs:
                 info: Highest allowed resolution of the sky
             multimodel:
                 dtype: bool
-                default: false
                 info: Use the SPOTLESS algorithm with multi-dimensional model
             beam:
                 dtype: bool
-                default: false
                 info: Generate a gridless beam
             api:
                 dtype: str
-                default: https://tart.elec.ac.nz/signal
                 info: Telescope API server URL
             catalog:
                 dtype: str
-                default: https://tart.elec.ac.nz/catalog
                 info: Catalog API URL
             display:
                 dtype: bool
-                default: false
                 info: Display image to the user
             fits:
                 dtype: bool
-                default: false
                 info: Generate a FITS format image
             PNG:
                 dtype: bool
-                default: false
                 info: Generate a PNG format image
             PDF:
                 dtype: bool
-                default: false
                 info: Generate a PDF format image
             SVG:
                 dtype: bool
-                default: false
                 info: Generate a SVG format image
             show-sources:
                 dtype: bool
-                default: false
                 info: Show known sources on images (only works on PNG)
             show-model:
                 dtype: bool
-                default: false
                 info: Show the location of the model sources
             elevation:
                 dtype: float
-                default: 20.0
                 info: Elevation limit for displaying sources (degrees)
             title:
                 dtype: str
-                default: spotless
                 info: Prefix the output files
             debug:
                 dtype: bool
-                default: false
                 info: Display debugging information
 

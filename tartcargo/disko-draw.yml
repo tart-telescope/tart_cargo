@@ -38,28 +38,45 @@ cabs:
                 info: The disko HDF output file
                 policies:
                     positional: true
+            catalog:
+                dtype: str
+                info: Catalog API URL
             show-sources:
                 dtype: bool
-                default: false
-                info: "Display the known sources in the field"
+                info: Show known sources on images (only works on PNG and SVG)
             elevation:
                 dtype: float
-                info: "Elevation limit for displaying sources (degrees). (default: 20.0)"
-            scale-mad:
-                dtype: bool
-                info: "Scale the image to the median absolute deviatoin (default: false)"
-            max:
-                dtype: float
-                info: "Upper end of image range (-1 means calculate) (default: -1)"
+                info: Elevation limit for displaying sources (degrees)
             min:
                 dtype: float
-                info: "Lower end of image range (-1 means calculate) (default: -1)"
+                info: Lower end of image range (-1 means calculate)
+            max:
+                dtype: float
+                info: Upper end of image range (-1 means calculate)
+            scale-mad:
+                dtype: bool
+                info: Scale pixels to the median absolute deviation
+            sqrt:
+                dtype: bool
+                info: Scale pixels to the square root
+            display:
+                dtype: bool
+                info: Display the field of view
             SVG:
                 dtype: str
-                info: "The name of the SVG output file"
+                info: The name of the SVG output file
             PNG:
                 dtype: str
-                info: "The name of the PNG output file"
+                info: The name of the PNG output file
             PDF:
                 dtype: str
-                info: "The name of the PDF output file"
+                info: The name of the PDF output file
+            VTK:
+                dtype: str
+                info: The name of the VTK mesh output file
+            FITS:
+                dtype: str
+                info: The name of the FITS output file
+            debug:
+                dtype: bool
+                info: Display debugging information

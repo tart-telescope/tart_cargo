@@ -15,48 +15,124 @@ cabs:
                 dtype: MS
                 required: true
                 info: The measurement set
+            file:
+                dtype: File
+                must_exist: true
+                required: false
+                info: TART .h5 visibility file
+            vis:
+                dtype: File
+                must_exist: true
+                required: false
+                info: Use a local JSON file containing the visibilities
             column:
                 dtype: str
-                default: DATA
                 info: The measurement set column to image
-            nvis:
-                dtype: int
-                default: 1000
-                info: Number of visibilities to use. Memory use is proportional to this.
-            channel:
-                dtype: int
-                default: 0
-                info: The frequency channel to use.
-            field:
-                dtype: int
-                default: 0
-                info: The field to use.
-            lasso:
-                dtype: bool
-                default: false
-                info: "Use L1/L2 regularization, controlled by alpha, l1-ratio parameters"
-            alpha:
-                dtype: float
-                default: 0.02
-                info: "The L1 regularization parameter"
-            l1-ratio:
-                dtype: float
-                default: 0.05
-                info: "The lasso L1/L2-ratio parameter"
             HDF:
                 dtype: str
                 required: true
-                info: The spherical image file (.hdf5) format
+                info: Generate an HDF format field of view
+            nvis:
+                dtype: int
+                info: Number of visibilities to use
+            channel:
+                dtype: int
+                info: The frequency channel to use
+            field:
+                dtype: int
+                info: The field to use
+            ddid:
+                dtype: int
+                info: The DDID from the measurement set
+            dir:
+                dtype: Directory
+                must_exist: false
+                info: Output directory
             healpix:
                 dtype: bool
-                default: true
+                info: Use HealPix tiling
+            nside:
+                dtype: int
+                required: false
+                info: Healpix nside parameter for display purposes only
             fov:
                 dtype: str
-                required: true
                 info: The field of view use a suffix (deg, arcmin, arcsec)
             res:
                 dtype: str
-                required: true
                 info: The resolution per pixel use a suffix (deg, arcmin, arcsec)
+            mesh:
+                dtype: bool
+                info: Use a non-structured mesh in the image space
+            adaptive:
+                dtype: int
+                info: Use N cycles of adaptive meshing
+            res-min:
+                dtype: str
+                required: false
+                info: Highest allowed resolution of the sky
+            lsqr:
+                dtype: bool
+                info: Use lsqr in matrix-free
+            lsmr:
+                dtype: bool
+                info: Use lsmr in matrix-free
+            fista:
+                dtype: bool
+                info: Use FISTA in matrix-free
+            lasso:
+                dtype: bool
+                info: Use L1 regularization
+            tikhonov:
+                dtype: bool
+                info: Use L2 regularization
+            matrix-free:
+                dtype: bool
+                info: Use matrix-free regularization
+            niter:
+                dtype: int
+                info: Number of iterations for iterative solutions
+            alpha:
+                dtype: float
+                info: Regularization parameter
+            l1-ratio:
+                dtype: float
+                info: "Regularization parameter, ratio of l1 to l2 (1.0 means l1 only)"
+            show-sources:
+                dtype: bool
+                info: Show known sources on images (only works on PNG and SVG)
+            title:
+                dtype: str
+                info: Prefix the output files
+            elevation:
+                dtype: float
+                info: Elevation limit for displaying sources (degrees)
+            display:
+                dtype: bool
+                info: Display image to the user
+            PNG:
+                dtype: bool
+                info: Generate a PNG format image
+            PDF:
+                dtype: bool
+                info: Generate a PDF format image
+            SVG:
+                dtype: bool
+                info: Generate a SVG format image
+            VTK:
+                dtype: bool
+                info: Generate a VTK mesh format image
+            FITS:
+                dtype: bool
+                info: Generate a FITS format image
+            cv:
+                dtype: bool
+                info: Use cross validation
+            dask:
+                dtype: bool
+                info: Use dask
+            debug:
+                dtype: bool
+                info: Display debugging information
 
 

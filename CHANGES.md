@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.7
+
+- Expand disko cab to cover all 38 CLI inputs (up from 12)
+- Expand disko-draw cab to cover all 16 CLI inputs (up from 9)
+- Remove explicit defaults from spotless, disko, and disko-draw — let CLI defaults apply
+- Document image version policy in AGENTS.md
+
 ## 0.4.6
 
 - Expand spotless cab definition: add 22 missing CLI inputs (file, vis, ddid, dir, nside, mesh,
