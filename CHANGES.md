@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.6
+
+- Expand spotless cab definition: add 22 missing CLI inputs (file, vis, ddid, dir, nside, mesh,
+  adaptive, res-min, beam, api, catalog, display, fits, PNG, PDF, SVG, show-sources,
+  show-model, elevation, title, debug)
+- Fix healpix default (true → false) and fov/res from required to defaulted
+
 ## 0.4.5
 
 - Bump tools image to v1.1.9
