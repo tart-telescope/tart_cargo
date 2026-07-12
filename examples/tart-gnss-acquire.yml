@@ -27,13 +27,13 @@ cabs:
 
 
 gnss-acquire:
-    info: TART imaging using stimela
+    info: TART raw data processing using stimela
 
     inputs:
         tart:
             dtype: str
             required: true
-            info: "TART name (e.g. mu-udm)"
+            info: "TART name (e.g. nz-test)"
         pw:
             dtype: str
             required: true
@@ -61,11 +61,11 @@ gnss-acquire:
                 raw: true
 
         pause:
-            skip: =EXISTS(recipe.hdf)
+            #skip: =EXISTS(recipe.hdf)
             cab: sleep
 
         set-vis-mode:
-            skip: =EXISTS(recipe.hdf)
+            #skip: =EXISTS(recipe.hdf)
             cab: tart-set-mode
             params:
                 api: =recipe.api
@@ -74,7 +74,7 @@ gnss-acquire:
 
         download-raw:
             cab: tart-download-data
-            skip: =EXISTS(recipe.hdf)
+            #skip: =EXISTS(recipe.hdf)
             params:
                 api: =recipe.api
                 raw: true
@@ -86,7 +86,6 @@ gnss-acquire:
             params:
                 file: =steps.download-raw.file
                 output: =recipe.sv
-                beidou: true
+                all: true
                 cn0: true
                 filter-phase-mad: 0.1
-
