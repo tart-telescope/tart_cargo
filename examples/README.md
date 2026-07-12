@@ -12,7 +12,7 @@ them to a measurement set with `tart2ms`, then creates images using both `disko`
 to SVG with `disko-draw`.
 
 ```
-make test TART=mu-udm
+stimela run example_recipe.yml tart=mu-udm
 ```
 
 ### `make-movie.yml`
@@ -22,7 +22,7 @@ over all HDF files to create measurement sets and spotless images for each times
 Suitable for generating time-lapse movies of the radio sky.
 
 ```
-make movie TART=mu-udm
+stimela run make-movie.yml tart=mu-udm
 ```
 
 ### `predict_recipe.yml`
@@ -36,3 +36,7 @@ Sets a TART telescope to raw mode, downloads raw samples, then runs `tart-gnss-a
 to calculate signal strengths, phases, and Doppler offsets for GNSS constellations. Resets the telescope to vis mode when done.
 
 Requires a TART API password (`pw` input). For the test tart (nz-test), ask on the TART telegram channel for the password.
+
+```
+uv run stimela run tart-gnss-acquire.yml tart=nz-test pw=passwd
+```

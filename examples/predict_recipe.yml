@@ -11,6 +11,9 @@ _include:
     - (tartcargo):
         - tart2ms.yml
         - tart-download-data.yml
+        - disko.yml
+        - spotless.yml
+        - disko-draw.yml
         - tartball.yml
 
 tart-image:
@@ -29,6 +32,9 @@ tart-image:
         hdf:
             dtype: File
             default: '{current.tart}-vis.hdf'
+        svg:
+            dtype: File
+            default: '{current.tart}.svg'
 
     assign:
         api: 'https://api.elec.ac.nz/tart/{recipe.tart}'
@@ -52,8 +58,48 @@ tart-image:
                 single-field: true
                 rephase: obs-midpoint
 
+
+        disko-image:
+            cab: disko
+            params:
+                ms: =recipe.ms
+                column: DATA
+                HDF: ='{recipe.tart}-disko.sphere'
+                nvis: 10000
+                healpix: true
+                fov: 170deg
+                res: 0.5deg
+                lasso: true
+                alpha: 0.006
+                l1-ratio: 0.02
+
+        disko-draw:
+            cab: disko-draw
+            params:
+                hdf: ='{recipe.tart}-disko.sphere'
+                show-sources: true
+                scale-mad: true
+                SVG: ='disko-{recipe.svg}'
+
+        spotless-image:
+            cab: spotless
+            params:
+                ms: =recipe.ms
+                HDF: ='{recipe.tart}-spotless.sphere'
+                nvis: 10000
+                multimodel: true
+                healpix: true
+                fov: 170deg
+                res: 0.5deg
+
+        spotless-draw:
+            cab: disko-draw
+            params:
+                hdf: ='{recipe.tart}-spotless.sphere'
+                show-sources: true
+                scale-mad: true
+                SVG: ='spotless-{recipe.svg}'
+
         predict:
             cab: tartball
             params:
-                ms: =recipe.ms
-
