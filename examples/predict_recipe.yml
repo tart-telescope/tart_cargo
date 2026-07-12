@@ -101,5 +101,6 @@ tart-image:
                 SVG: ='spotless-{recipe.svg}'
 
         predict:
+            info: Use the spotless model to predict the visibility of the field of view
             cab: tartball
             params:

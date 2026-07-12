@@ -61,16 +61,6 @@ cabs:
             res:
                 dtype: str
                 info: The resolution per pixel use a suffix (deg, arcmin, arcsec)
-            mesh:
-                dtype: bool
-                info: Use a non-structured mesh in the image space
-            adaptive:
-                dtype: int
-                info: Use N cycles of adaptive meshing
-            res-min:
-                dtype: str
-                required: false
-                info: Highest allowed resolution of the sky
             lsqr:
                 dtype: bool
                 info: Use lsqr in matrix-free
@@ -134,5 +124,3 @@ cabs:
             debug:
                 dtype: bool
                 info: Display debugging information
-
-

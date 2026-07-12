@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.8
+
+- Remove mesh parameters from disko cab (mesh, adaptive, res-min — no longer built on arm64)
+- Add save-model-json, max-steps, and log to spotless cab
+- Bump tools image to v1.2.0
+
 ## 0.4.7
 
 - Expand disko cab to cover all 38 CLI inputs (up from 12)

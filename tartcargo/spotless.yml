@@ -155,6 +155,19 @@ cabs:
             show-model:
                 dtype: bool
                 info: Show the location of the model sources
+            save-model-json:
+                dtype: File
+                required: false
+                must_exist: false
+                info: Save the point-source model as JSON
+            max-steps:
+                dtype: int
+                info: Maximum number of deconvolution steps
+            log:
+                dtype: File
+                required: false
+                must_exist: false
+                info: Save deconvolution progress and statistics to file
             elevation:
                 dtype: float
                 info: Elevation limit for displaying sources (degrees)
