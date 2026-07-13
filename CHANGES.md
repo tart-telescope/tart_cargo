@@ -4,6 +4,7 @@
 
 - Bump tools image to v1.2.2
 - Bump tartball image to 0.3.2
+- Fix tartball beam parameter: accept 'tart', 'default', or file path (changed from File to str)
 
 ## 0.4.10
 
