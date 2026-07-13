@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.9
+
+- Bump tools image to v1.2.1 (adds casacore-data for IERS/leap-second tables)
+
 ## 0.4.8
 
 - Remove mesh parameters from disko cab (mesh, adaptive, res-min — no longer built on arm64)
