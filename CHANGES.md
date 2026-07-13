@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.10
+
+- Update tart-cargo-base.yml to tools v1.2.1
+
 ## 0.4.9
 
 - Bump tools image to v1.2.1 (adds casacore-data for IERS/leap-second tables)
