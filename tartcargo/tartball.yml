@@ -69,8 +69,3 @@ cabs:
                 dtype: bool
                 default: false
                 info: Enable debug logging.
-
-        outputs:
-            ms:
-                dtype: MS
-                info: Output measurement set with predicted visibilities in the DATA column.
