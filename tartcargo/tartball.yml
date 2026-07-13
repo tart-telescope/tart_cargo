@@ -7,7 +7,7 @@ cabs:
         image:
             _use: vars.tart-cargo.images
             name: tartball
-            version: 0.3.1
+            version: 0.3.2
         command: tartball
         info: Predict visibilities from a sky model using the DiSkO healpix telescope operator.
 

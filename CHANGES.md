@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.11
+
+- Bump tools image to v1.2.2
+- Bump tartball image to 0.3.2
+
 ## 0.4.10
 
 - Update tart-cargo-base.yml to tools v1.2.1
