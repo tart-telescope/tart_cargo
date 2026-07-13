@@ -57,10 +57,9 @@ cabs:
                 default: 0.0
                 info: Standard deviation of additive complex Gaussian noise.
             beam:
-                dtype: File
+                dtype: str
                 required: false
-                must_exist: true
-                info: Path to beam JSON file, or 'tart' for the built-in TART beam pattern.
+                info: Path to beam JSON file, or 'tart' for the built-in TART beam pattern, or 'default'
             clobber:
                 dtype: bool
                 default: false
