@@ -35,6 +35,9 @@ tart-image:
         svg:
             dtype: File
             default: '{current.tart}.svg'
+        model:
+            dtype: File
+            default: '{current.tart}-spotless-model.json'
 
     assign:
         api: 'https://api.elec.ac.nz/tart/{recipe.tart}'
@@ -60,6 +63,7 @@ tart-image:
 
         spotless-image:
             cab: spotless
+            skip: =EXISTS(recipe.model)
             params:
                 ms: =recipe.ms
                 HDF: ='{recipe.tart}-spotless.sphere'
@@ -68,7 +72,7 @@ tart-image:
                 healpix: true
                 fov: 170deg
                 res: 0.5deg
-                save-model-json: ='{recipe.tart}-spotless.model.json'
+                save-model-json: =recipe.model
 
         spotless-draw:
             cab: disko-draw
@@ -82,7 +86,7 @@ tart-image:
             info: Use the spotless model to predict the visibility of the field of view
             cab: tartball
             params:
-                model: ='{recipe.tart}-spotless.model.json'
+                model: =recipe.model
                 ms: ='{recipe.tart}-recovered.ms'
                 api: =recipe.api
                 beam: 'tart'
