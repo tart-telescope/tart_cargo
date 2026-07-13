@@ -58,39 +58,17 @@ tart-image:
                 single-field: true
                 rephase: obs-midpoint
 
-
-        disko-image:
-            cab: disko
-            params:
-                ms: =recipe.ms
-                column: DATA
-                HDF: ='{recipe.tart}-disko.sphere'
-                nvis: 10000
-                healpix: true
-                fov: 170deg
-                res: 0.5deg
-                lasso: true
-                alpha: 0.006
-                l1-ratio: 0.02
-
-        disko-draw:
-            cab: disko-draw
-            params:
-                hdf: ='{recipe.tart}-disko.sphere'
-                show-sources: true
-                scale-mad: true
-                SVG: ='disko-{recipe.svg}'
-
         spotless-image:
             cab: spotless
             params:
                 ms: =recipe.ms
                 HDF: ='{recipe.tart}-spotless.sphere'
-                nvis: 10000
+                nvis: 1000
                 multimodel: true
                 healpix: true
                 fov: 170deg
                 res: 0.5deg
+                save-model-json: ='{recipe.tart}-spotless.model.json'
 
         spotless-draw:
             cab: disko-draw
@@ -104,3 +82,9 @@ tart-image:
             info: Use the spotless model to predict the visibility of the field of view
             cab: tartball
             params:
+                model: ='{recipe.tart}-spotless.model.json'
+                ms: ='{recipe.tart}-recovered.ms'
+                api: =recipe.api
+                beam: 'tart'
+                fov: 170deg
+                res: 0.5deg

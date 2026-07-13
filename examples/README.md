@@ -30,6 +30,10 @@ stimela run make-movie.yml tart=mu-udm
 Downloads visibilities and creates a measurement set, then runs `tartball` to simulate
 TART data from that measurement set — useful for validating telescope models.
 
+```
+uv run stimela run predict_recipe.yml tart=bd-iub
+```
+
 ### `tart-gnss-acquire.yml`
 
 Sets a TART telescope to raw mode, downloads raw samples, then runs `tart-gnss-acquire`
