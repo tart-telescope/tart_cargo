@@ -57,4 +57,55 @@ cabs:
                 dtype: File
                 must_exist: false
                 info: Set the name of the JSON output file
+            i:
+                dtype: int
+                info: First antenna index (correlation mode)
+            j:
+                dtype: int
+                info: Second antenna index (correlation mode)
+            debug:
+                dtype: bool
+                info: Print per-PRN, per-antenna diagnostics to stderr
+            benchmark:
+                dtype: bool
+                info: Single-PRN timing with startup/search breakdown
+            test-antennas:
+                dtype: bool
+                info: Rank antennas by relative C/N0 quality (implies --cn0 and, unless a constellation flag is given, --all)
+            test-min-cn0:
+                dtype: float
+                info: Reference-satellite C/N0 threshold in dB-Hz (default 44.0)
+            rfi:
+                dtype: bool
+                info: Narrowband RFI report per antenna (spectral lines + autocorrelation fingerprint); cannot be combined with --benchmark, --test-antennas, --i/--j, or --simulate
+            simulate:
+                dtype: bool
+                info: Generate a synthetic HDF5 observation instead of reading a recorded one
+            sources:
+                dtype: File
+                info: Source catalogue JSON array, each source with name, az (deg), el (deg), r (m), and jy (Jy) (required with --simulate)
+            positions:
+                dtype: File
+                info: Antenna positions JSON, array of [east, north, up] coordinates in metres (simulation mode)
+            N:
+                dtype: int
+                info: Number of random antenna positions when --positions is not given (simulation mode)
+            diameter:
+                dtype: float
+                info: Diameter of the random antenna circle in metres (simulation mode, default 3.0)
+            seed:
+                dtype: int
+                info: RNG seed for the simulation
+            sample-rate:
+                dtype: float
+                info: Sampling rate in Hz (simulation mode, default 16.368e6)
+            center-freq:
+                dtype: float
+                info: Center frequency in Hz (simulation mode, default 4.092e6)
+            band:
+                dtype: float
+                info: Frequency band in Hz (simulation mode, default 2.0e6)
+            snr:
+                dtype: float
+                info: Signal-to-noise ratio in dB (required with --simulate)
 

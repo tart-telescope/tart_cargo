@@ -50,7 +50,8 @@ cabs:
                 info: Output directory
             healpix:
                 dtype: bool
-                info: Use HealPix tiling
+                required: true
+                info: Use HealPix tiling (required — disko errors unless --healpix or --mesh is given, and --mesh is unavailable in the tools image)
             nside:
                 dtype: int
                 required: false
