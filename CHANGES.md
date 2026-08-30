@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.12
+
+- Bump tools image to v1.2.3 (tart2ms>=0.9.3, spotless>=0.8.0, tart_tools>=1.4.6)
+- Add the new tart-gnss-acquire inputs matching the tart-gnss-acquire CLI (rfi, test-antennas, test-min-cn0, simulate and the simulation options, i, j, debug, benchmark)
+- Require the healpix input in the disko cab (disko errors unless --healpix or --mesh is given)
+- Document tools image propagation and cab dependency maintenance in AGENTS.md
+
 ## 0.4.11
 
 - Bump tools image to v1.2.2
