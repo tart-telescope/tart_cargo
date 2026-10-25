@@ -244,21 +244,51 @@ def _wait_for_publish(tag: str, timeout_s: int = 1800, poll_s: int = 20) -> None
 # ------------------------------------------------------------------- tasks
 
 def _example_recipes():
-    return sorted((ROOT / "examples").glob("*.yml"))
+    """(path, recipe_name, recipes_in_file) for every recipe in examples/.
+
+    A file may define more than one recipe — make-movie.yml defines
+    `tart-movie` and `loop-make-images` — in which case stimela needs the
+    recipe name on the command line to know which one to run.
+    """
+    recipes = []
+    for path in sorted((ROOT / "examples").glob("*.yml")):
+        doc = yaml.safe_load(path.read_text()) or {}
+        names = [
+            key
+            for key, value in doc.items()
+            if key not in ("opts", "_include")
+            and isinstance(value, dict)
+            and ("steps" in value or "inputs" in value)
+        ]
+        for name in names:
+            recipes.append((path, name, len(names)))
+    return recipes
 
 
-def _required_inputs(recipe_path: Path) -> dict:
-    """Required inputs of the single recipe defined in the file."""
-    doc = yaml.safe_load(recipe_path.read_text()) or {}
-    for key, value in doc.items():
-        if key in ("opts", "_include") or not isinstance(value, dict):
-            continue
-        return {
-            name: spec
-            for name, spec in (value.get("inputs") or {}).items()
-            if isinstance(spec, dict) and spec.get("required")
-        }
-    return {}
+def _needs_value(spec) -> bool:
+    """Does a recipe input need a value for a dry-run?
+
+    stimela's inputs come in two shapes: the long mapping
+    (`{dtype: str, required: true, info: …}`) and the shorthand type
+    annotation (`hdf-files: List[str]`). It calls an input required when it
+    has no default and is not explicitly optional, so treat a missing
+    `required` as required and anything with a `default` as satisfied.
+    """
+    if isinstance(spec, dict):
+        if spec.get("required") is False or "default" in spec:
+            return False
+        return bool(spec.get("required", True))
+    return True  # shorthand annotation, e.g. "List[str]"
+
+
+def _required_inputs(recipe_path: Path, recipe_name: str) -> dict:
+    """Inputs of one named recipe that still need a value."""
+    spec = yaml.safe_load(recipe_path.read_text()).get(recipe_name) or {}
+    return {
+        name: value
+        for name, value in (spec.get("inputs") or {}).items()
+        if _needs_value(value)
+    }
 
 
 @task(help={"with_image": "also check every cab command exists in the tools image"})
@@ -274,15 +304,17 @@ def test(c, with_image=False):
 
     _banner("test: stimela dry-runs (prevalidation only, nothing executes)")
     ran = skipped = 0
-    for recipe in _example_recipes():
-        required = _required_inputs(recipe)
+    for path, recipe_name, count in _example_recipes():
+        required = _required_inputs(path, recipe_name)
         missing = [name for name in required if name not in _DRY_RUN_INPUTS]
         if missing:
-            print(_yellow(f"  skip {recipe.name}: no dry-run value for {missing}"))
+            print(_yellow(f"  skip {path.name}:{recipe_name} — no dry-run value for {missing}"))
             skipped += 1
             continue
         args = [f"{name}={_DRY_RUN_INPUTS[name]}" for name in required]
-        _run(UV["run", "stimela", "run", "-d", str(recipe), *args])
+        # stimela refuses multi-recipe files without an explicit selector
+        selector = [recipe_name] if count > 1 else []
+        _run(UV["run", "stimela", "run", "-d", str(path), *selector, *args])
         ran += 1
     print(f"  {ran} recipes prevalidated, {skipped} skipped")
 
