@@ -1,3 +1,8 @@
+# disko CLI (mirrors disko master after tmolteno/disko#12 and #25).
+#
+# tools v1.2.3 still ships disko 1.4.4 from PyPI (uploaded 2026-07-14), so
+# until the image is rebuilt recipes must keep passing `healpix: true`, and
+# `no-regularization` only works once the image contains a newer disko.
 _include:
     - genesis/tart-cargo-base.yml
 
@@ -20,11 +25,6 @@ cabs:
                 must_exist: true
                 required: false
                 info: TART .h5 visibility file
-            vis:
-                dtype: File
-                must_exist: true
-                required: false
-                info: Use a local JSON file containing the visibilities
             column:
                 dtype: str
                 info: The measurement set column to image
@@ -50,18 +50,17 @@ cabs:
                 info: Output directory
             healpix:
                 dtype: bool
-                required: true
-                info: Use HealPix tiling (required — disko errors unless --healpix or --mesh is given, and --mesh is unavailable in the tools image)
+                info: Use HealPix tiling (the default when --mesh is not given; --mesh is unavailable in the tools image)
             nside:
                 dtype: int
                 required: false
                 info: Healpix nside parameter for display purposes only
             fov:
                 dtype: str
-                info: The field of view use a suffix (deg, arcmin, arcsec)
+                info: Field of view; an angle with a suffix is required (e.g. 170deg, 30arcmin, 12arcsec — bare numbers are rejected)
             res:
                 dtype: str
-                info: The resolution per pixel use a suffix (deg, arcmin, arcsec)
+                info: Maximum resolution of the sky; an angle with a suffix is required (e.g. 0.5deg, 30arcmin, 12arcsec — bare numbers are rejected)
             lsqr:
                 dtype: bool
                 info: Use lsqr in matrix-free
@@ -76,7 +75,10 @@ cabs:
                 info: Use L1 regularization
             tikhonov:
                 dtype: bool
-                info: Use L2 regularization
+                info: Use L2 regularization (the default when no algorithm flag is given)
+            no-regularization:
+                dtype: bool
+                info: Solve the visibilities directly with no regularization (opt-in — unregularized imaging is no longer the silent default)
             matrix-free:
                 dtype: bool
                 info: Use matrix-free regularization
@@ -85,19 +87,16 @@ cabs:
                 info: Number of iterations for iterative solutions
             alpha:
                 dtype: float
-                info: Regularization parameter
+                info: Regularization parameter (defaults to 0.02)
             l1-ratio:
                 dtype: float
                 info: "Regularization parameter, ratio of l1 to l2 (1.0 means l1 only)"
-            show-sources:
-                dtype: bool
-                info: Show known sources on images (only works on PNG and SVG)
+            # --show-sources and --elevation are no longer disko inputs:
+            # disko rejects both and points at disko_draw (tmolteno/disko#25),
+            # so source overplotting belongs on the disko-draw cab.
             title:
                 dtype: str
                 info: Prefix the output files
-            elevation:
-                dtype: float
-                info: Elevation limit for displaying sources (degrees)
             display:
                 dtype: bool
                 info: Display image to the user

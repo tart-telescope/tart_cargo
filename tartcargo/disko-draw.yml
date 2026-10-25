@@ -17,6 +17,7 @@
 #   --VTK VTK             Generate a VTK mesh format image. (default: None)
 #   --FITS FITS           Generate a FITS format image. (default: None)
 #   --sqrt                Scale pixels to the square root (default: False)
+#   --scale-mad           Scale pixels to the median absolute deviation (default: False)
 #   --display             Display the field of view (default: False)
 #   --version             Display the current version (default: False)
 #   --debug               Display debugging information (default: False)
