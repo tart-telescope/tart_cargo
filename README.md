@@ -131,3 +131,13 @@ You can run this recipe as follows:
     stimela run example_recipe.yml tart=mu-udm
     
 This will download data, and form an image from the specified TART telescope.
+
+## Releasing
+
+Version, changelog and the tools-image pointer move together, and a `v*.*.*`
+tag publishes the package to PyPI through CI. Run `invoke release` (add
+`--tools-tag=vX.Y.Z` when the tools image changed — it waits for the image to
+exist before pointing `genesis/tart-cargo-base.yml` at it); see
+[RELEASE.md](RELEASE.md) for the process and [AGENTS.md](AGENTS.md) for the
+image and cab policy underneath it. This is normally the final stage of
+disko's [release chain](https://github.com/tmolteno/disko/blob/master/RELEASE.md).
