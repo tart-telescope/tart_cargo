@@ -7,8 +7,8 @@ corresponding Docker images. When bumping image versions, verify every `command`
 resolves:
 
 ```bash
-# tools image (v1.1.8)
-docker run --rm --entrypoint "" ghcr.io/tart-telescope/tools:v1.1.8 sh -c \
+# tools image (v1.2.3)
+docker run --rm --entrypoint "" ghcr.io/tart-telescope/tools:v1.2.3 sh -c \
   'for cmd in tart_download_data tart_get_archive_data tart_set_mode tart2ms \
               tart-gnss-acquire disko disko_draw spotless; do
      printf "%-30s " "$cmd"; which "$cmd" 2>&1 || echo "MISSING"
@@ -19,7 +19,8 @@ docker run --rm --entrypoint "" ghcr.io/tart-telescope/tartball:0.1.1 sh -c \
   'which tartball'
 ```
 
-Last validated: 2026-07-07 against tools:v1.1.8 and tartball:0.1.1 — all present.
+Last validated: 2026-10-26 against tools:v1.2.3 (all 8 commands present);
+tartball:0.1.1 last validated 2026-07-07.
 
 ## Image version policy
 
@@ -30,7 +31,7 @@ cabs' code to propagate to tart_cargo — the image is the only way the executab
 the cabs.
 
 `tartcargo/genesis/tart-cargo-base.yml` sets the default image version for all cabs
-(`vars.tart-cargo.images.version`), currently `v1.2.2`. Its `version` field must only
+(`vars.tart-cargo.images.version`), currently `v1.2.3`. Its `version` field must only
 be bumped to a tag that already exists on `ghcr.io/tart-telescope/tools`; never bump
 ahead of a pushed image tag. After bumping, re-run the validation commands above to
 confirm all executables are present in the new image.
@@ -56,7 +57,7 @@ confirm all executables are present in the new image.
    `git tag v1.2.3 && git push origin v1.2.3`. The `docker-publish.yml` workflow then
    builds and pushes `ghcr.io/tart-telescope/tools:v1.2.3` (multi-arch amd64/arm64).
    Pick the next version after the latest tools tag (`git tag --sort=-v:refname`),
-   currently `v1.2.2` → `v1.2.3`. The tools image version is independent of the cab
+   currently `v1.2.3` → `v1.2.4`. The tools image version is independent of the cab
    versions it bundles.
 3. **Verify the new image** — once the workflow completes, re-run the validation
    commands from the section above against the new tag, plus any newly added
