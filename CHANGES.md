@@ -2,12 +2,15 @@
 
 ## 0.4.13
 
+- Bump tools image to v1.2.4 (tart2ms>=0.9.5, disko>=1.4.4, spotless>=0.8.0, tart_tools>=1.4.6). Fixes #10: the image no longer ships tart2ms 0.9.3, whose `--add-model` wrote an all-zero MODEL_DATA (declination-as-elevation filter plus missing `el` key dropped every GNSS source), nor 0.9.4, which predicted every GNSS satellite at one barycentric position (tart2ms#68). The new image carries tart2ms 0.9.5, whose model sources come from topocentric az/el — verified non-zero MODEL_DATA with model directions spread over the sky.
+- Note: tools v1.2.4 still resolves disko from PyPI to 1.4.4, so the `healpix: true` warning below still applies. The planned `disko==1.5.0` exact-pin rebuild moves to the next image tag (v1.2.5); disko 1.5.0 is not on PyPI yet.
+
 - disko cab: drop the inputs current disko rejects — `vis`, `show-sources` and `elevation`. Source overplotting moved to the disko-draw cab (tmolteno/disko#25); no recipe is affected, since none of the examples pass those three to `cab: disko`.
-- disko cab: `healpix` is no longer required — disko now defaults to the healpix tiling when neither `--mesh` nor `--healpix` is given (tmolteno/disko#12). **Recipes running against the shipped tools v1.2.3 (disko 1.4.4 from PyPI) must keep passing `healpix: true`**, because that build still errors without it, until the image is rebuilt.
+- disko cab: `healpix` is no longer required — disko now defaults to the healpix tiling when neither `--mesh` nor `--healpix` is given (tmolteno/disko#12). **Recipes running against tools v1.2.3 or v1.2.4 (disko 1.4.4 from PyPI) must keep passing `healpix: true`**, because those builds still error without it, until disko ≥1.5.0 ships in an image.
 - disko cab: add the new `no-regularization` input — the unregularized solve is opt-in as of tmolteno/disko#12. Only usable once the tools image ships a disko newer than 1.4.4.
 - disko cab: document that `alpha` defaults to 0.02 and that Tikhonov is now the default algorithm when no algorithm flag is given.
 - disko-draw cab: document `--scale-mad` in the usage header (the input itself was already present).
-- Note: tools v1.2.3 remains the newest GHCR tag, and its `pip install disko>=1.4.4` resolves to PyPI 1.4.4 (uploaded 2026-07-14). disko's later work — #12 defaults, #23 casacure migration, #24/#25/#26 fixes and the pillow 13 / certifi security bump — is master-only until disko publishes a release. Planned: disko 1.5.0, then rebuild tools as v1.2.4 with an exact `disko==1.5.0` pin, then bump `genesis/tart-cargo-base.yml` here.
+- Note: as of tools v1.2.4 its `pip install disko>=1.4.4` still resolves to PyPI 1.4.4 (uploaded 2026-07-14). disko's later work — #12 defaults, #23 casacure migration, #24/#25/#26 fixes and the pillow 13 / certifi security bump — is master-only until disko publishes a release. Planned: disko 1.5.0, then rebuild tools with an exact `disko==1.5.0` pin (v1.2.5 or later), then bump `genesis/tart-cargo-base.yml` here.
 
 ## 0.4.12
 
