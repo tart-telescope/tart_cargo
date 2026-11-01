@@ -1,7 +1,7 @@
 # disko CLI (mirrors disko master after tmolteno/disko#12 and #25).
 #
-# tools v1.2.3 still ships disko 1.4.4 from PyPI (uploaded 2026-07-14), so
-# until the image is rebuilt recipes must keep passing `healpix: true`, and
+# tools v1.2.3 and v1.2.4 still ship disko 1.4.4 from PyPI (uploaded
+# 2026-07-14), so recipes must keep passing `healpix: true`, and
 # `no-regularization` only works once the image contains a newer disko.
 _include:
     - genesis/tart-cargo-base.yml
