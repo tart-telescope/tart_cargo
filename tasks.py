@@ -145,6 +145,16 @@ def image_version() -> str:
     return match.group("v")
 
 
+def _genesis_registry() -> str:
+    """The container registry shared by every cab image (genesis vars)."""
+    data = yaml.safe_load(GENESIS.read_text()) or {}
+    images = (((data.get("vars") or {}).get("tart-cargo") or {}).get("images") or {})
+    registry = images.get("registry")
+    if not registry:
+        raise Exit(f"no registry: in {GENESIS}")
+    return registry
+
+
 def set_image_version(tag: str) -> bool:
     text = GENESIS.read_text()
     old = image_version()
@@ -319,22 +329,32 @@ def test(c, with_image=False):
     print(f"  {ran} recipes prevalidated, {skipped} skipped")
 
     if with_image:
-        _banner(f"test: cab commands exist in {TOOLS_IMAGE}:{image_version()}")
-        commands = sorted(
-            {
-                spec["command"]
-                for path in (ROOT / "tartcargo").glob("*.yml")
-                for spec in (yaml.safe_load(path.read_text()) or {}).get("cabs", {}).values()
-            }
-        )
-        script = "; ".join(f"which {cmd} || echo MISSING:{cmd}" for cmd in commands)
-        rc, out, _ = _capture(
-            local["docker"]["run", "--rm", "--entrypoint", "", f"{TOOLS_IMAGE}:{image_version()}", "sh", "-c", script]
-        )
-        missing = [line for line in out.splitlines() if line.startswith("MISSING:")]
-        if rc != 0 or missing:
-            raise Exit("missing executables in the image: " + ", ".join(m.replace("MISSING:", "") for m in missing))
-        print(f"  all {len(commands)} commands present")
+        _banner(f"test: cab commands exist in their images (tools {image_version()})")
+        registry = _genesis_registry()
+        default_version = image_version()
+        by_image = {}
+        for path in sorted((ROOT / "tartcargo").glob("*.yml")):
+            for spec in (yaml.safe_load(path.read_text()) or {}).get("cabs", {}).values():
+                img = spec.get("image") or {}
+                # `_use: vars.tart-cargo.images` supplies registry + the shared
+                # default version; a cab may name a different image and pin its
+                # own version (tartball does both).
+                ref = "{}/{}:{}".format(
+                    registry,
+                    img.get("name", "tools"),
+                    img.get("version", default_version),
+                )
+                by_image.setdefault(ref, set()).add(spec["command"])
+        for ref in sorted(by_image):
+            commands = sorted(by_image[ref])
+            script = "; ".join(f"which {cmd} || echo MISSING:{cmd}" for cmd in commands)
+            rc, out, _ = _capture(
+                local["docker"]["run", "--rm", "--entrypoint", "", ref, "sh", "-c", script]
+            )
+            missing = [line.replace("MISSING:", "") for line in out.splitlines() if line.startswith("MISSING:")]
+            if rc != 0 or missing:
+                raise Exit(f"missing executables in {ref}: " + ", ".join(missing))
+            print(f"  {ref}: all {len(commands)} commands present")
 
     print(_green("\ntest: OK"))
 
