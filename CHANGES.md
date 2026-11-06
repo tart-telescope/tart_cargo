@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.0
+
+- Release 0.5.0.
+
 ## 0.4.13
 
 - Bump tools image to v1.2.4 (tart2ms>=0.9.5, disko>=1.4.4, spotless>=0.8.0, tart_tools>=1.4.6). Fixes #10: the image no longer ships tart2ms 0.9.3, whose `--add-model` wrote an all-zero MODEL_DATA (declination-as-elevation filter plus missing `el` key dropped every GNSS source), nor 0.9.4, which predicted every GNSS satellite at one barycentric position (tart2ms#68). The new image carries tart2ms 0.9.5, whose model sources come from topocentric az/el — verified non-zero MODEL_DATA with model directions spread over the sky.
@@ -80,3 +84,4 @@
 - Add tart-cargo base with L1C code
 - Update tart-gnss-acquire to latest version
 - Fix security issue: require requests >= 2.33
+
