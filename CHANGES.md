@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.2
+
+- Release 0.5.2.
+
 ## 0.5.1
 
 - AGENTS: the tools checkout lives at ./tools; validate against v1.3.0
@@ -88,5 +92,6 @@
 - Add tart-cargo base with L1C code
 - Update tart-gnss-acquire to latest version
 - Fix security issue: require requests >= 2.33
+
 
 
