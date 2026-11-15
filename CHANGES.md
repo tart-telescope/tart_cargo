@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.3
+
+- Release 0.5.3.
+
 ## 0.5.2
 
 - Release 0.5.2.
@@ -92,6 +96,7 @@
 - Add tart-cargo base with L1C code
 - Update tart-gnss-acquire to latest version
 - Fix security issue: require requests >= 2.33
+
 
 
 
