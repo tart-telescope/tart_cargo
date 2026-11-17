@@ -23,7 +23,8 @@ checklist — lives in `AGENTS.md`; this file is the operational how-to.
 ```console
 $ invoke --list
   bump      Show (or apply) the next package version and its CHANGES section.
-  release   base image -> test -> version -> tag -> CI publishes to PyPI.
+  release   base image -> test -> smoke -> version -> tag -> CI publishes to PyPI.
+  smoke     Actually run the radio-imaging basics example end-to-end.
   status    Show package version, tags and the configured tools image.
   test      Parse every cab/recipe YAML and prevalidate each example recipe.
 ```
@@ -44,6 +45,26 @@ $ invoke --list
 - `--with-image` additionally runs every cab's `command` inside
   `ghcr.io/tart-telescope/tools:<configured tag>` and fails if any executable
   is missing (the check documented in `AGENTS.md`).
+
+### `smoke`
+
+- runs the radio-imaging `basics` example for real — copies
+  `simple_recipe.yml` into a scratch dir and executes it with stimela
+  (equivalent to `make TART=<tart>` there): downloads visibilities from a
+  TART station, builds a measurement set, and images with spotless and
+  disko. Fails unless stimela exits 0 and all four expected outputs exist
+  (`<tart>-spotless.sphere`, `<tart>-disko.sphere`, `spotless-<tart>.svg`,
+  `disko-<tart>.svg`).
+- needs apptainer/singularity and network access to the TART API; takes
+  several minutes (a one-off image pull on first run). This is the check
+  that catches broken image contents (e.g. an incompatible dependency
+  inside the tools image) that the `test` dry-runs cannot see.
+- `--tart` picks the station (default `ghana`), `--nvis` lowers the
+  visibility count the recipe images with (as shipped: 10000 — on machines
+  with <32 GB RAM the `disko` step is OOM-killed, so pass e.g. `--nvis=1000`),
+  `--example-dir` locates the radio-imaging basics checkout (default
+  `$RADIO_IMAGING_BASICS` or the sibling `../radio-imaging/basics`),
+  `--keep` retains the scratch dir.
 
 ### `bump`
 
@@ -70,16 +91,19 @@ modified tracked files.
    With `--no-wait` it refuses instead of waiting if the image is absent.
    Without `--tools-tag`, a package-only release leaves the base image alone.
 2. **test** — the YAML + dry-run suite above (`--skip-tests` to bypass).
-3. **version** — current-if-untagged, otherwise bump, plus the `CHANGES.md`
+3. **smoke** — actually runs the basics example end-to-end (see above) and
+   fails the release if it errors or misses an output (`--skip-smoke` to
+   bypass; `--smoke-tart` picks the station, default `ghana`).
+4. **version** — current-if-untagged, otherwise bump, plus the `CHANGES.md`
    section as described above.
-4. **publish** — commit (`pyproject.toml`, `CHANGES.md`, and the genesis file
+5. **publish** — commit (`pyproject.toml`, `CHANGES.md`, and the genesis file
    if it changed) → annotated tag `v<version>` → `git push --follow-tags`.
    `--wait` (default) then polls `gh run list --workflow deploy_module.yaml`
    until the run on that tag succeeds. **A tag push is what publishes**, so
    never push one casually.
 
 Flags: `--level`, `--yes`, `--tools-tag`, `--wait` / `--no-wait`,
-`--skip-tests`, `--dry-run`.
+`--skip-tests`, `--skip-smoke`, `--smoke-tart`, `--dry-run`.
 
 ## Safety
 
@@ -133,5 +157,6 @@ $ gh run list --workflow deploy_module.yaml --watch
 | `CHANGES.md: drafted a … section — please review` | you released a version with no curated entries; review the generated bullets before anyone reads them |
 | `publish workflow failed: <url>` | the tag is pushed — **do not re-tag**; fix forward and release the next version |
 | a recipe is skipped in `test` | its required input has no dry-run value in `_DRY_RUN_INPUTS`; add one if you want it covered |
+| `radio-imaging basics checkout not found` | `smoke` couldn't find `simple_recipe.yml`; pass `--example-dir`, set `RADIO_IMAGING_BASICS`, or use `--skip-smoke` |
 | `stimela` not found / wrong env | run with `uv run invoke …` from this directory (uv carries the project env) |
 | missing executables with `--with-image` | the configured image predates a cab's tool; bump the base image or fix the tools image first |

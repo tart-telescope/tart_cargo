@@ -4,6 +4,7 @@ Release automation for tart_cargo: invoke tasks backed by plumbum.
     invoke --list
     invoke test                                # YAML + stimela dry-runs
     invoke test --with-image                   # + AGENTS.md command check
+    invoke smoke                               # end-to-end basics example, really runs
     invoke release --dry-run
     invoke release --yes --tools-tag=v1.2.4    # what disko's chain runs
 
@@ -22,10 +23,16 @@ to PyPI on that tag (nothing publishes from here, so never tag casually).
                    prevalidates with `stimela run -d` (nothing executes);
                    --with-image additionally checks every cab's `command`
                    exists inside the configured tools image.
-    3. version     release the current pyproject version if it has no tag yet
+    3. smoke       run the radio-imaging `basics` example for real
+                   (`simple_recipe.yml`, i.e. `make TART=<tart>`) in a scratch
+                   dir: downloads visibilities, creates an MS and images with
+                   spotless and disko, failing the release if any step errors
+                   or the expected outputs are missing. Needs apptainer/
+                   singularity and network access to the TART API.
+    4. version     release the current pyproject version if it has no tag yet
                    (the CHANGES entry for it is usually already written),
                    otherwise bump level.
-    4. publish     commit (pyproject + CHANGES + genesis) + tag v<version> +
+    5. publish     commit (pyproject + CHANGES + genesis) + tag v<version> +
                    push -> CI publishes to PyPI; --wait watches that run.
 
 Invoked from disko's release chain as
@@ -35,8 +42,10 @@ Invoked from disko's release chain as
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
+import tempfile
 import time
 import urllib.error
 import urllib.request
@@ -44,7 +53,8 @@ from pathlib import Path
 
 import yaml
 from invoke import Exit, task
-from plumbum import colors, local
+from plumbum import FG, colors, local
+from plumbum.commands.processes import ProcessExecutionError
 
 ROOT = Path(__file__).resolve().parent
 PYPROJECT = ROOT / "pyproject.toml"
@@ -359,6 +369,94 @@ def test(c, with_image=False):
     print(_green("\ntest: OK"))
 
 
+# --------------------------------------------------------------- smoke test
+
+# The radio-imaging "basics" example this gate runs; equivalent to
+# `make TART=<tart>` in that directory.
+_EXAMPLE_RECIPE = "simple_recipe.yml"
+# Outputs the recipe must produce for the run to count as a pass.
+_EXAMPLE_OUTPUTS = (
+    "{tart}-spotless.sphere",
+    "{tart}-disko.sphere",
+    "spotless-{tart}.svg",
+    "disko-{tart}.svg",
+)
+
+
+def _basics_example_dir(example_dir: str | None) -> Path:
+    """Locate the radio-imaging basics checkout holding simple_recipe.yml."""
+    candidates = []
+    if example_dir:
+        candidates.append(Path(example_dir))
+    else:
+        env = os.environ.get("RADIO_IMAGING_BASICS")
+        if env:
+            candidates.append(Path(env))
+        candidates.append(ROOT.parent / "radio-imaging" / "basics")
+    for cand in candidates:
+        if (cand / _EXAMPLE_RECIPE).is_file():
+            return cand.resolve()
+    raise Exit(
+        f"radio-imaging basics checkout not found (looked for {_EXAMPLE_RECIPE} in "
+        + ", ".join(str(c) for c in candidates)
+        + "); pass --example-dir or set RADIO_IMAGING_BASICS, or release with --skip-smoke"
+    )
+
+
+@task(
+    help={
+        "tart": "TART station to image (default: ghana)",
+        "example_dir": "radio-imaging basics dir (default: $RADIO_IMAGING_BASICS or <sibling>/radio-imaging/basics)",
+        "nvis": "override the recipe's nvis (default: as shipped, 10000); lower it (e.g. 1000) on machines with <32 GB RAM or the disko step gets OOM-killed",
+        "keep": "keep the scratch working dir for inspection",
+    }
+)
+def smoke(c, tart="ghana", example_dir=None, nvis=None, keep=False):
+    """Actually run the radio-imaging basics example end-to-end.
+
+    The dry-runs in `test` only prove the YAML prevalidates; this downloads
+    real visibilities from a TART station, builds a measurement set and images
+    it with spotless and disko — the same work `make TART=<tart>` does in the
+    radio-imaging repo. It needs apptainer/singularity plus network access to
+    the TART API, and takes several minutes (image pull on first run).
+    """
+    src = _basics_example_dir(example_dir)
+    _banner(f"smoke: end-to-end basics example (tart={tart}, image {image_version()})")
+    print(f"  recipe: {src / _EXAMPLE_RECIPE}")
+
+    workdir = Path(tempfile.mkdtemp(prefix=f"tart-cargo-smoke-{tart}-"))
+    print(f"  scratch dir: {workdir}")
+    try:
+        recipe_text = (src / _EXAMPLE_RECIPE).read_text()
+        if nvis is not None:
+            # nvis is a step param, not a recipe input, so patch the copied
+            # YAML rather than passing it on the command line.
+            recipe_text = recipe_text.replace("nvis: 10000", f"nvis: {nvis}")
+        (workdir / _EXAMPLE_RECIPE).write_text(recipe_text)
+        # --project keeps tart_cargo's uv env while stimela runs with cwd set
+        # to the scratch dir, so every output lands there.
+        cmd = UV["run", "--project", str(ROOT), "stimela", "run", _EXAMPLE_RECIPE, f"tart={tart}"]
+        print(_paint(colors.light_blue, f"+ (cd {workdir} && {cmd})"), flush=True)
+        try:
+            with local.cwd(workdir):
+                cmd & FG
+        except ProcessExecutionError as exc:
+            raise Exit(f"smoke run failed (stimela exit code {exc.retcode}); see the log above")
+
+        missing = [name.format(tart=tart) for name in _EXAMPLE_OUTPUTS if not (workdir / name.format(tart=tart)).is_file()]
+        if missing:
+            raise Exit(f"smoke run finished but expected outputs are missing: {', '.join(missing)}")
+        for name in _EXAMPLE_OUTPUTS:
+            path = workdir / name.format(tart=tart)
+            print(f"  {path.name}: {path.stat().st_size} bytes")
+        print(_green(f"\nsmoke: OK (tart={tart})"))
+    finally:
+        if keep:
+            print(_yellow(f"  keeping {workdir}"))
+        else:
+            shutil.rmtree(workdir, ignore_errors=True)
+
+
 @task(help={"level": "patch | minor | major (default: patch)", "dry_run": "show, don't write"})
 def bump(c, level="patch", dry_run=False):
     """Show (or apply) the next package version and its CHANGES section."""
@@ -387,11 +485,13 @@ def tag_target_set() -> set:
         "tools_tag": "bump the base image to this tools tag first",
         "wait": "wait for GHCR (with --tools-tag) and for the PyPI run (default)",
         "skip_tests": "skip the YAML/stimela checks (not for routine use)",
+        "skip_smoke": "skip the end-to-end basics example (not for routine use)",
+        "smoke_tart": "TART station the smoke test images (default: ghana)",
         "dry_run": "print the plan and exit",
     }
 )
-def release(c, level="patch", yes=False, tools_tag=None, wait=True, skip_tests=False, dry_run=False):
-    """base image -> test -> version -> tag -> CI publishes to PyPI."""
+def release(c, level="patch", yes=False, tools_tag=None, wait=True, skip_tests=False, skip_smoke=False, smoke_tart="ghana", dry_run=False):
+    """base image -> test -> smoke -> version -> tag -> CI publishes to PyPI."""
     current = read_version()
     target = current if f"v{current}" not in tag_target_set() else bump_version(current, level)
 
@@ -401,9 +501,10 @@ def release(c, level="patch", yes=False, tools_tag=None, wait=True, skip_tests=F
             state = "exists" if _image_exists(tools_tag) else "not yet"
             print(f"  1. base image  genesis -> {tools_tag} (GHCR: {state})")
         print(f"  2. test        YAML + stimela dry-runs of {len(_example_recipes())} recipes")
+        print(f"  3. smoke       end-to-end basics example (tart={smoke_tart})" + ("  [skipped]" if skip_smoke else ""))
         note = " (already unreleased)" if target == current else f" ({level} bump)"
-        print(f"  3. version     {current} -> {target}{note}")
-        print(f"  4. publish     commit + tag v{target} + push -> deploy_module.yaml -> PyPI")
+        print(f"  4. version     {current} -> {target}{note}")
+        print(f"  5. publish     commit + tag v{target} + push -> deploy_module.yaml -> PyPI")
         print(_yellow("  dry run: nothing executed"))
         return
 
@@ -418,6 +519,10 @@ def release(c, level="patch", yes=False, tools_tag=None, wait=True, skip_tests=F
 
     if not skip_tests:
         test(c)
+    if not skip_smoke:
+        smoke(c, tart=smoke_tart)
+    else:
+        print(_yellow("  smoke: skipped (--skip-smoke)"))
 
     write_version(target)
     _changes_for(target)
