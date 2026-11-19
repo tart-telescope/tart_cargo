@@ -2,6 +2,11 @@
 
 ## 0.5.4
 
+- `release --tools-tag` now points the base image at the new tag **before**
+  the test/smoke gates (restoring it if the gates fail), so a release that
+  upgrades away from a broken image is gated on the image it ships, not the
+  one it replaces — gating on the old base rejected the very release that
+  fixed tools#5 (v1.3.3 died in spotless, v1.3.4 passed).
 - Both releases now live in this script: new `tools-release` (and
   `tools-test`) control the tools image release — `tools-release` sets the
   optional exact `disko==` pin, **builds the Docker container locally**,

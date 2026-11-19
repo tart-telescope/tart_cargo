@@ -781,17 +781,31 @@ def release(c, level="patch", yes=False, tools_tag=None, wait=True, skip_tests=F
         elif not _image_exists(tools_tag):
             raise Exit(f"{tools_tag} is not on GHCR yet — refusing to bump ahead of the image (AGENTS.md)")
 
-    if not skip_tests:
-        test(c)
-    if not skip_smoke:
-        smoke(c, tart=smoke_tart)
-    else:
-        print(_yellow("  smoke: skipped (--skip-smoke)"))
+    # Gate on the image this release will point at: the current base may be
+    # broken (v1.3.3 died on tools#5) and shipping the new tag is exactly the
+    # fix, so testing the old image would reject the repairing release. GHCR
+    # has the tag (waited above); the pointer change rides in the release
+    # commit below. Restored if the gates fail, so a failed run leaves the
+    # tree clean for a retry.
+    previous_image = image_version()
+    if tools_tag:
+        set_image_version(tools_tag)
+
+    try:
+        if not skip_tests:
+            test(c)
+        if not skip_smoke:
+            smoke(c, tart=smoke_tart)
+        else:
+            print(_yellow("  smoke: skipped (--skip-smoke)"))
+    except BaseException:
+        if image_version() != previous_image:
+            print(_yellow(f"  gates failed — restoring base image to {previous_image}"))
+            set_image_version(previous_image)
+        raise
 
     write_version(target)
     _changes_for(target)
-    if tools_tag:
-        set_image_version(tools_tag)
 
     _confirm(f"Release tart_cargo {target} + tag v{target} (CI publishes to PyPI)?", yes)
 

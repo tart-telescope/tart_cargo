@@ -156,10 +156,15 @@ modified tracked files.
 1. **base image** — with `--tools-tag=vX.Y.Z`, **poll GHCR until that image
    really exists** (up to 60 min; the arm64 leg of the image build runs on a
    self-hosted runner), then point `tartcargo/genesis/tart-cargo-base.yml`
-   (`vars.tart-cargo.images.version`) at it. This enforces the `AGENTS.md`
-   rule: *never bump the version ahead of a tag that already exists on GHCR*.
-   With `--no-wait` it refuses instead of waiting if the image is absent.
-   Without `--tools-tag`, a package-only release leaves the base image alone.
+   (`vars.tart-cargo.images.version`) at it — **before** the test/smoke
+   gates, so the gates validate the image this release ships (the old base
+   is often the broken one — that is why the release exists; see tools#5,
+   where gating on v1.3.3 would have rejected the v1.3.4 fix). The pointer
+   change is restored if the gates fail, keeping the tree clean for a retry.
+   This enforces the `AGENTS.md` rule: *never bump the version ahead of a
+   tag that already exists on GHCR*. With `--no-wait` it refuses instead of
+   waiting if the image is absent. Without `--tools-tag`, a package-only
+   release leaves the base image alone.
 2. **test** — the YAML + dry-run suite above (`--skip-tests` to bypass).
 3. **smoke** — actually runs the basics example end-to-end (see above) and
    fails the release if it errors or misses an output (`--skip-smoke` to
