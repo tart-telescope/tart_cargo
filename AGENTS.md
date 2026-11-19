@@ -54,13 +54,14 @@ here) with `>=` minimum pins
 1. **Ship the cab change upstream** — commit and release it in the cab's own repo
    first (for tart-gnss: `git tag vX.Y.Z && git push origin vX.Y.Z`, e.g. `v0.4.0`,
    which publishes the crate to crates.io).
-2. **Build a new tools image** — in the tools checkout (`./tools` here), commit any Dockerfile
-   changes (e.g. raised pins) and tag the *tools* repo with its own next version:
-   `git tag v1.2.3 && git push origin v1.2.3`. The `docker-publish.yml` workflow then
-   builds and pushes `ghcr.io/tart-telescope/tools:v1.2.3` (multi-arch amd64/arm64).
-   Pick the next version after the latest tools tag (`git tag --sort=-v:refname`),
-   currently `v1.3.0` → `v1.3.1`. The tools image version is independent of the cab
-   versions it bundles.
+2. **Build a new tools image** — from this checkout run `invoke tools-release`
+   (see `RELEASE.md`): it commits any Dockerfile changes (e.g. raised pins),
+   **builds the image locally and gates it with this script's stimela tests**,
+   then tags the tools repo with its next version and pushes. The
+   `docker-publish.yml` workflow then builds and pushes
+   `ghcr.io/tart-telescope/tools:<tag>` (multi-arch amd64/arm64). Pick the
+   next version after the latest tools tag (`git tag --sort=-v:refname`).
+   The tools image version is independent of the cab versions it bundles.
 3. **Verify the new image** — once the workflow completes, re-run the validation
    commands from the section above against the new tag, plus any newly added
    commands.
@@ -77,9 +78,9 @@ Worked example — incorporating tart-gnss-acquire v0.4.0 (adds `--rfi`):
 ```bash
 # 1. tart-gnss is already tagged v0.4.0 → crate on crates.io
 
-# 2. tools repo: rebuild the image with the new crate
-cd ~/github/tools
-git tag v1.2.4 && git push origin v1.2.4        # → ghcr.io/tart-telescope/tools:v1.2.4
+# 2. rebuild the image (this script controls the tools release too)
+cd ~/github/tart_cargo
+invoke tools-release --yes    # local build + stimela gates + tag → GHCR
 
 # 3. validate: re-run the docker checks in "Validating yml commands" against v1.2.3
 

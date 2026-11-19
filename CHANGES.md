@@ -2,6 +2,16 @@
 
 ## 0.5.4
 
+- Both releases now live in this script: new `tools-release` (and
+  `tools-test`) control the tools image release — `tools-release` sets the
+  optional exact `disko==` pin, **builds the Docker container locally**,
+  gates it with **this script's stimela tests** (recipe dry-runs, every cab
+  command inside the local image, and the end-to-end `smoke` on the
+  committed mz-up data — the local build is converted into stimela's
+  `.simg` cache from `docker-daemon:`, because stimela would otherwise pull
+  the published image from GHCR), then tags, waits for GHCR and hands the
+  tag to `release --tools-tag`. `tools/tasks.py` is gone — the disko chain's
+  tools stage now runs `invoke -r ../tart_cargo tools-release`.
 - Release smoke gate runs offline on committed mz-up data: `invoke smoke`
   (and `invoke release`'s smoke stage, now defaulting to `tart=mz-up`)
   images `testdata/mz-up-vis.hdf` — visibilities pre-downloaded from the

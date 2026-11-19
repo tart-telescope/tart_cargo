@@ -5,12 +5,21 @@ Release automation for tart_cargo: invoke tasks backed by plumbum.
     invoke test                                # YAML + stimela dry-runs
     invoke test --with-image                   # + AGENTS.md command check
     invoke smoke                               # end-to-end basics example, really runs
+    invoke tools_test                          # build the tools image locally + stimela gates
+    invoke tools_release --dry-run
     invoke release --dry-run
     invoke release --yes --tools-tag=v1.2.4    # what disko's chain runs
 
 tart_cargo releases are the package tags: bump pyproject, keep CHANGES.md in
 step, tag v<X.Y.Z> and push — .github/workflows/deploy_module.yaml publishes
 to PyPI on that tag (nothing publishes from here, so never tag casually).
+
+**Both releases are controlled by this script**: the tools image release
+(`tools_release`, below) and this package's (`release`). The tools release
+builds the Docker container **locally** and tests it with **this script's
+stimela gates** — the dry-run suite, the cab-command check inside the local
+image, and the end-to-end `smoke` pipeline run against the local build —
+before tagging; CI then builds the multi-arch image for GHCR.
 
 `release` stages:
 
@@ -40,7 +49,8 @@ to PyPI on that tag (nothing publishes from here, so never tag casually).
                    push -> CI publishes to PyPI; --wait watches that run.
 
 Invoked from disko's release chain as
-`invoke -r <this repo> release --level=patch --yes --tools-tag=<new tag>`.
+`invoke -r <this repo> release --level=patch --yes --tools-tag=<new tag>`
+(and stage 4 as `invoke -r <this repo> tools_release --disko-version=<new>`).
 """
 
 from __future__ import annotations
@@ -495,7 +505,222 @@ def smoke(c, tart="ghana", example_dir=None, nvis=None, hdf=None, keep=False):
             shutil.rmtree(workdir, ignore_errors=True)
 
 
-@task(help={"level": "patch | minor | major (default: patch)", "dry_run": "show, don't write"})
+# ------------------------------------------------------------ tools image
+
+# The tools repo builds the container every cab above runs in. Its release
+# lives in this script so both releases (tools image and this package) are
+# controlled here; the checkout is a sibling by default (override with
+# TART_CARGO_TOOLS_REPO).
+TOOLS_REPO = Path(os.environ.get("TART_CARGO_TOOLS_REPO", ROOT.parent / "tools"))
+TOOLS_DOCKERFILE = TOOLS_REPO / "Dockerfile"
+_DISKO_PIN = re.compile(r'"disko[^"]*"')
+_SIMG_DIR = Path("~/.singularity").expanduser()
+
+
+def _tools_git(*args):
+    rc, out, err = local["git"][list(args)].run(retcode=None, cwd=str(TOOLS_REPO))
+    return rc, out.strip(), err.strip()
+
+
+def _tools_latest_tag() -> str:
+    rc, out, _ = _tools_git("describe", "--tags", "--abbrev=0")
+    return out if rc == 0 else ""
+
+
+def _tools_next_tag(level: str) -> str:
+    latest = _tools_latest_tag()
+    if not latest:
+        raise Exit(f"no tags in {TOOLS_REPO} — nothing to bump from")
+    return "v" + bump_version(latest.lstrip("v"), level)
+
+
+def _assert_tools_clean() -> None:
+    rc, out, err = _tools_git("status", "--porcelain")
+    if rc != 0:
+        raise Exit(f"git status (tools) failed: {err}")
+    modified = [line for line in out.splitlines() if not line.startswith("??")]
+    if modified:
+        raise Exit("tools working tree has modified files; commit or stash them:\n  " + "\n  ".join(modified))
+
+
+def _pypi_has(package: str, version: str) -> bool:
+    url = f"https://pypi.org/pypi/{package}/{version}/json"
+    try:
+        with urllib.request.urlopen(url, timeout=20) as response:
+            return json.load(response)["info"]["version"] == version
+    except urllib.error.URLError as exc:
+        raise Exit(f"cannot reach PyPI ({exc})") from exc
+    except (json.JSONDecodeError, KeyError):
+        return False
+
+
+def _wait_for_pypi(package: str, version: str, timeout_s: int = 900, poll_s: int = 15) -> None:
+    print(_paint(colors.light_blue, f"  waiting for {package} {version} on PyPI ..."))
+    deadline = time.monotonic() + timeout_s
+    while time.monotonic() < deadline:
+        if _pypi_has(package, version):
+            print(_green(f"  PyPI has {package} {version}"))
+            return
+        time.sleep(poll_s)
+    raise Exit(f"timed out after {timeout_s}s waiting for {package} {version}")
+
+
+def _set_disko_pin(version: str) -> bool:
+    """Pin `disko==version` exactly: releases must be reproducible."""
+    text = TOOLS_DOCKERFILE.read_text()
+    matches = _DISKO_PIN.findall(text)
+    if len(matches) != 1:
+        raise Exit(f"expected exactly one disko pin in the Dockerfile, found {len(matches)}")
+    new_pin = f'"disko=={version}"'
+    if matches[0] == new_pin:
+        print(f"  Dockerfile already pinned {new_pin}")
+        return False
+    TOOLS_DOCKERFILE.write_text(_DISKO_PIN.sub(new_pin, text, count=1))
+    print(_green(f"  Dockerfile pin {matches[0]} -> {new_pin}"))
+    return True
+
+
+def _build_tools_image(tag: str) -> None:
+    """Build the tools container locally, tagged as the release candidate."""
+    if not TOOLS_REPO.is_dir():
+        raise Exit(f"tools checkout not found at {TOOLS_REPO} (set TART_CARGO_TOOLS_REPO)")
+    if not shutil.which("docker"):
+        raise Exit("docker not found on PATH — the tools release builds the image locally")
+    ref = f"{TOOLS_IMAGE}:{tag}"
+    _banner(f"tools: local docker build ({ref})")
+    _run(local["docker"]["build", "--progress=plain", "-t", ref, "."], cwd=str(TOOLS_REPO))
+
+
+def _seed_simg(tag: str) -> Path:
+    """Convert the local docker build into the .simg the stimela gates run.
+
+    stimela's singularity backend converts `docker://<ref>` **from the
+    registry** and only reuses `~/.singularity/<ref>.simg` when that file
+    already exists — so without this the smoke gate would silently test the
+    published image instead of the local build. `docker-daemon:` reads the
+    image just built.
+    """
+    ref = f"{TOOLS_IMAGE}:{tag}"
+    simg = _SIMG_DIR / (ref.replace("/", "-") + ".simg")
+    runtime = "apptainer" if shutil.which("apptainer") else "singularity"
+    if not shutil.which(runtime):
+        raise Exit(f"neither apptainer nor singularity found — cannot convert {ref} for the stimela gates")
+    _SIMG_DIR.mkdir(exist_ok=True)
+    if simg.exists():
+        simg.unlink()
+    _banner(f"tools: converting the local build for stimela ({simg.name})")
+    _run(local[runtime]["build", str(simg), f"docker-daemon:{ref}"])
+    return simg
+
+
+def _stimela_gates_on_local_image(c, tag: str, skip_smoke: bool = False) -> None:
+    """This script's stimela gates against a locally built tools image.
+
+    The gates resolve the image from the genesis pointer, so it is pointed at
+    `tag` for the duration and restored afterwards — `test --with-image` then
+    `docker run`s the local build, and `smoke` runs the pipeline from the
+    .simg seeded above (offline, on the committed mz-up data).
+    """
+    old = image_version()
+    print(_yellow(f"  genesis temporarily at {tag} for the local-image gates (restored after)"))
+    set_image_version(tag)
+    try:
+        test(c, with_image=True)
+        if not skip_smoke:
+            smoke(c, tart="mz-up")
+    finally:
+        if image_version() != old:
+            set_image_version(old)
+
+
+@task(
+    help={
+        "tag": "image tag to build and test (default: the next release tag)",
+        "quick": "image already built; only convert it and run the stimela gates",
+        "skip_smoke": "skip the end-to-end smoke gate (not for routine use)",
+    }
+)
+def tools_test(c, tag=None, quick=False, skip_smoke=False):
+    """Build the tools image locally and test it with this script's stimela gates."""
+    tag = tag or _tools_next_tag("patch")
+    _banner(f"tools test: {TOOLS_IMAGE}:{tag} (local build)")
+    if not quick:
+        _build_tools_image(tag)
+    _seed_simg(tag)
+    _stimela_gates_on_local_image(c, tag, skip_smoke=skip_smoke)
+    print(_green(f"\ntools test: OK ({TOOLS_IMAGE}:{tag}, local build)"))
+
+
+@task(
+    help={
+        "level": "patch | minor | major for the image tag (default: patch)",
+        "yes": "skip the confirmation prompt",
+        "disko_version": "pin the Dockerfile to exactly this disko release (verified on PyPI first)",
+        "skip_tests": "skip the stimela gates (not for routine use)",
+        "wait": "wait for the GHCR image to exist (default)",
+        "dry_run": "print the plan and exit",
+    }
+)
+def tools_release(c, level="patch", yes=False, disko_version=None, skip_tests=False, wait=True, dry_run=False):
+    """pin -> build the container locally -> stimela gates -> tag -> CI multi-arch -> wait GHCR."""
+    planned = _tools_next_tag(level)
+
+    if dry_run:
+        _banner("tools release plan (dry run)")
+        if disko_version:
+            print(f"  1. pin        Dockerfile: disko=={disko_version} (verified on PyPI first)")
+        print(f"  2. build      docker build -t {TOOLS_IMAGE}:{planned}  (local)")
+        if skip_tests:
+            print("  3. gates      [skipped]")
+        else:
+            print(f"  3. gates      stimela on the local build: dry-runs + cab commands + smoke (offline mz-up)")
+        print(f"  4. tag        {_tools_latest_tag()} -> {planned}, push -> docker-publish.yml -> GHCR")
+        if wait:
+            print(f"  5. wait       poll until {TOOLS_IMAGE}:{planned} exists")
+        print(_yellow("  dry run: nothing executed"))
+        return
+
+    _banner("tools release (this script controls both the tools and tart_cargo releases)")
+    _assert_tools_clean()
+
+    if disko_version:
+        # The caller's disko publish may only just have landed.
+        _wait_for_pypi("disko", disko_version)
+        _set_disko_pin(disko_version)
+
+    # Build first: the local build is what the gates run below, and it
+    # proves the (possibly just-changed) Dockerfile pins still resolve.
+    _build_tools_image(planned)
+    if not skip_tests:
+        _seed_simg(planned)
+        _stimela_gates_on_local_image(c, planned)
+    else:
+        print(_yellow("  --skip-tests: stimela gates skipped (the build itself validated the pins)"))
+
+    _confirm(f"Tag {planned} and push (CI builds and pushes the image)?", yes)
+
+    _run(GIT["add", str(TOOLS_DOCKERFILE)], cwd=str(TOOLS_REPO))
+    rc, _, _ = local["git"]["diff", "--cached", "--quiet"].run(retcode=None, cwd=str(TOOLS_REPO))
+    if rc != 0:
+        _run(
+            GIT["commit", "-m", f"Release {planned}" + (f": pin disko=={disko_version}" if disko_version else "")],
+            cwd=str(TOOLS_REPO),
+        )
+    else:
+        print("  nothing to commit; tagging the current commit")
+    _run(GIT["tag", "-a", planned, "-m", f"Release {planned}"], cwd=str(TOOLS_REPO))
+    _run(GIT["push", "--follow-tags", "origin", "HEAD"], cwd=str(TOOLS_REPO))
+
+    if wait:
+        _wait_for_image(planned)
+    else:
+        print(_yellow("  not waiting for GHCR; tart_cargo must not bump to this tag yet"))
+
+    print(_green(f"\ntools release {planned} complete"))
+    print(f"  next: invoke release --tools-tag={planned}  (bump the base image + release this package)")
+
+
+@task(help={"level": "patch | minor | major for the package version (default: patch)", "dry_run": "show, don't write"})
 def bump(c, level="patch", dry_run=False):
     """Show (or apply) the next package version and its CHANGES section."""
     _banner("bump")

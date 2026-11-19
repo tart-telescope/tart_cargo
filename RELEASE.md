@@ -10,11 +10,20 @@ via the `pypi` environment, no API token to manage).
 $ invoke release --dry-run                          # print the plan, change nothing
 $ invoke release --tools-tag=v1.2.4                 # image bump + package release
 $ invoke release --level=patch --yes                # package only
+$ invoke tools-test                                 # build the tools image locally + stimela gates
+$ invoke tools-release --dry-run                    # the tools image release plan
+$ invoke tools-release --disko-version=1.5.0 --yes  # what disko's chain runs (stage 4)
 ```
 
-It runs standalone, or as the final stage of disko's chain
+**This one script controls both releases**: the tools image
+(`tools-release`) and this package (`release`). The tools release builds the
+Docker container locally and gates it with this script's stimela tests
+before tagging; CI then publishes the multi-arch image.
+
+It runs standalone, or as the final stages of disko's chain
 (`invoke -r ~/tart-telescope/tart_cargo release --level=patch --yes
---tools-tag=<new image tag>`); see `~/github/disko/RELEASE.md` for the chain.
+--tools-tag=<new tag>`; stage 4 is `tools-release` from this same script);
+see `~/github/disko/RELEASE.md` for the chain.
 The deeper policy — image-version rules, cab-vs-CLI sync, the full release
 checklist — lives in `AGENTS.md`; this file is the operational how-to.
 
@@ -22,12 +31,18 @@ checklist — lives in `AGENTS.md`; this file is the operational how-to.
 
 ```console
 $ invoke --list
-  bump      Show (or apply) the next package version and its CHANGES section.
-  release   base image -> test -> smoke (offline mz-up by default) -> version
-            -> tag -> CI publishes to PyPI.
-  smoke     Actually run the radio-imaging basics example end-to-end.
-  status    Show package version, tags and the configured tools image.
-  test      Parse every cab/recipe YAML and prevalidate each example recipe.
+  bump            Show (or apply) the next package version and its CHANGES
+                  section.
+  release         base image -> test -> smoke (offline mz-up by default) ->
+                  version -> tag -> CI publishes to PyPI.
+  smoke           Actually run the radio-imaging basics example end-to-end.
+  status          Show package version, tags and the configured tools image.
+  test            Parse every cab/recipe YAML and prevalidate each example
+                  recipe.
+  tools-release   pin -> build the container locally -> stimela gates -> tag ->
+                  CI multi-arch -> wait GHCR.
+  tools-test      Build the tools image locally and test it with this script's
+                  stimela gates.
 ```
 
 `invoke` and `plumbum` must be importable by whichever interpreter runs them
@@ -77,6 +92,49 @@ $ invoke --list
   pre-downloaded visibilities (see above), `--example-dir` locates the
   radio-imaging basics checkout (default `$RADIO_IMAGING_BASICS` or the
   sibling `../radio-imaging/basics`), `--keep` retains the scratch dir.
+
+### `tools-test`
+
+Builds the tools image **locally** (`docker build -t
+ghcr.io/tart-telescope/tools:<next>` in the tools checkout), converts it
+into the `.simg` stimela will run (from `docker-daemon:` — without that
+step stimela would silently pull the *published* image from GHCR instead of
+the build under test), then runs this script's gates against it: the YAML +
+dry-run recipe suite, every cab `command` checked inside the local image
+(`docker run`), and the end-to-end `smoke` pipeline (offline, on the
+committed mz-up data). The genesis image pointer is temporarily set to the
+test tag and restored afterwards.
+
+- `--tag` picks the image tag to build/test (default: the next release tag);
+- `--quick` skips the build (tests the image already in the local daemon);
+- `--skip-smoke` runs only the dry-run + command checks.
+
+### `tools-release`
+
+1. **pin** — with `--disko-version=X.Y.Z`, wait until PyPI really has that
+   release (the disko stage of the chain may have only just landed), then
+   set the Dockerfile's exact `disko==X.Y.Z` pin. Exact pins, not `>=`: an
+   image must be reproducible. Other packages keep their `>=` pins.
+2. **build** — `docker build -t ghcr.io/tart-telescope/tools:<next>`
+   locally. The build is what proves the (possibly just-changed) pins
+   resolve, and it is the image every gate below runs.
+3. **gates** — this script's stimela tests against that local build (the
+   `tools-test` gates above). `--skip-tests` skips them (the build still
+   validated the pins).
+4. **tag** — commit (only if the pin changed), annotated tag `v<next>`,
+   push with `--follow-tags`. That push triggers the multi-arch image build
+   (`docker-publish.yml`, amd64 + arm64 — arm64 on a self-hosted runner).
+5. **wait** — poll GHCR until `ghcr.io/tart-telescope/tools:<tag>` exists
+   (up to 60 min). tart_cargo must not bump its base image ahead of a
+   pushed image tag (AGENTS.md). `--no-wait` skips it.
+
+Then: `invoke release --tools-tag=<new tag>` bumps this package's base
+image pointer and releases the package. This is stage 4 of disko's chain
+(`invoke -r ../tart_cargo tools-release --level=patch --yes
+--disko-version=<new>`).
+
+Flags: `--level`, `--yes`, `--disko-version`, `--skip-tests`, `--dry-run`,
+`--wait` / `--no-wait`.
 
 ### `bump`
 
