@@ -334,7 +334,9 @@ def test(c, with_image=False):
         args = [f"{name}={_DRY_RUN_INPUTS[name]}" for name in required]
         # stimela refuses multi-recipe files without an explicit selector
         selector = [recipe_name] if count > 1 else []
-        _run(UV["run", "stimela", "run", "-d", str(path), *selector, *args])
+        # tuple display, not `UV[..., *selector, *args]` — starred subscripts
+        # are 3.11+ syntax (PEP 646) and the gate must run on the 3.10 floor
+        _run(UV[("run", "stimela", "run", "-d", str(path), *selector, *args)])
         ran += 1
     print(f"  {ran} recipes prevalidated, {skipped} skipped")
 
