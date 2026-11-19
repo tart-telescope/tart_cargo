@@ -25,10 +25,14 @@ to PyPI on that tag (nothing publishes from here, so never tag casually).
                    exists inside the configured tools image.
     3. smoke       run the radio-imaging `basics` example for real
                    (`simple_recipe.yml`, i.e. `make TART=<tart>`) in a scratch
-                   dir: downloads visibilities, creates an MS and images with
+                   dir: builds an MS from TART visibilities and images with
                    spotless and disko, failing the release if any step errors
-                   or the expected outputs are missing. Needs apptainer/
-                   singularity and network access to the TART API.
+                   or the expected outputs are missing. Defaults to the mz-up
+                   station on the committed pre-downloaded
+                   `testdata/mz-up-vis.hdf` — the recipe's download step
+                   skips itself when `<tart>-vis.hdf` already exists, so the
+                   default gate needs no TART API access. Needs
+                   apptainer/singularity (network only for other stations).
     4. version     release the current pyproject version if it has no tag yet
                    (the CHANGES entry for it is usually already written),
                    otherwise bump level.
@@ -384,6 +388,13 @@ _EXAMPLE_OUTPUTS = (
     "disko-{tart}.svg",
 )
 
+# Pre-downloaded visibility data from the mz-up TART
+# (https://api.elec.ac.nz/tart/mz-up, sha256-checked by tart_download_data
+# when it was fetched). Committed so the release smoke gate runs offline:
+# the basics recipe's download-hdf step is `skip: =EXISTS(recipe.hdf)`, so a
+# `<tart>-vis.hdf` present in the working directory is used as-is.
+_MZUP_HDF = ROOT / "testdata" / "mz-up-vis.hdf"
+
 
 def _basics_example_dir(example_dir: str | None) -> Path:
     """Locate the radio-imaging basics checkout holding simple_recipe.yml."""
@@ -407,24 +418,45 @@ def _basics_example_dir(example_dir: str | None) -> Path:
 
 @task(
     help={
-        "tart": "TART station to image (default: ghana)",
+        "tart": "TART station to image (default: ghana; mz-up runs offline on the committed data)",
         "example_dir": "radio-imaging basics dir (default: $RADIO_IMAGING_BASICS or <sibling>/radio-imaging/basics)",
-        "nvis": "override the recipe's nvis (default: as shipped, 10000); lower it (e.g. 1000) on machines with <32 GB RAM or the disko step gets OOM-killed",
+        "nvis": "override the recipe's nvis (default: as shipped, 1000); lower it on machines with <32 GB RAM or the disko step gets OOM-killed",
+        "hdf": "pre-downloaded <tart>-vis.hdf to image instead of downloading (default for tart=mz-up: testdata/mz-up-vis.hdf)",
         "keep": "keep the scratch working dir for inspection",
     }
 )
-def smoke(c, tart="ghana", example_dir=None, nvis=None, keep=False):
+def smoke(c, tart="ghana", example_dir=None, nvis=None, hdf=None, keep=False):
     """Actually run the radio-imaging basics example end-to-end.
 
-    The dry-runs in `test` only prove the YAML prevalidates; this downloads
-    real visibilities from a TART station, builds a measurement set and images
-    it with spotless and disko — the same work `make TART=<tart>` does in the
-    radio-imaging repo. It needs apptainer/singularity plus network access to
-    the TART API, and takes several minutes (image pull on first run).
+    The dry-runs in `test` only prove the YAML prevalidates; this builds a
+    measurement set from real TART visibilities and images it with spotless
+    and disko — the same work `make TART=<tart>` does in the radio-imaging
+    repo. With `tart=mz-up` (what `release` uses) it runs offline on the
+    committed `testdata/mz-up-vis.hdf`: a `<tart>-vis.hdf` present in the
+    working directory makes the recipe's download step skip itself. Any
+    other station downloads from the TART API. It needs
+    apptainer/singularity, and takes several minutes (image pull on first
+    run).
     """
     src = _basics_example_dir(example_dir)
+    if hdf is None and tart == "mz-up":
+        if _MZUP_HDF.is_file():
+            hdf = _MZUP_HDF
+        else:
+            print(_yellow(f"  {_MZUP_HDF} is missing — the recipe will download from the TART API instead"))
+    if hdf is not None:
+        hdf = Path(hdf).expanduser().resolve()
+        if not hdf.is_file():
+            raise Exit(f"--hdf: no such file: {hdf}")
+        # The recipe only skips download-hdf on EXISTS(<tart>-vis.hdf), so a
+        # mismatched name would silently re-download instead of running offline.
+        expected = f"{tart}-vis.hdf"
+        if hdf.name != expected:
+            raise Exit(f"--hdf must be named {expected} for tart={tart} (got {hdf.name})")
     _banner(f"smoke: end-to-end basics example (tart={tart}, image {image_version()})")
     print(f"  recipe: {src / _EXAMPLE_RECIPE}")
+    if hdf is not None:
+        print(f"  pre-downloaded visibilities: {hdf} (download step will skip)")
 
     workdir = Path(tempfile.mkdtemp(prefix=f"tart-cargo-smoke-{tart}-"))
     print(f"  scratch dir: {workdir}")
@@ -433,8 +465,12 @@ def smoke(c, tart="ghana", example_dir=None, nvis=None, keep=False):
         if nvis is not None:
             # nvis is a step param, not a recipe input, so patch the copied
             # YAML rather than passing it on the command line.
-            recipe_text = recipe_text.replace("nvis: 10000", f"nvis: {nvis}")
+            recipe_text, patched = re.subn(r"nvis: \d+", f"nvis: {nvis}", recipe_text)
+            if not patched:
+                raise Exit(f"no `nvis: <number>` line found in {src / _EXAMPLE_RECIPE} to override")
         (workdir / _EXAMPLE_RECIPE).write_text(recipe_text)
+        if hdf is not None:
+            shutil.copy2(hdf, workdir / f"{tart}-vis.hdf")
         # --project keeps tart_cargo's uv env while stimela runs with cwd set
         # to the scratch dir, so every output lands there.
         cmd = UV["run", "--project", str(ROOT), "stimela", "run", _EXAMPLE_RECIPE, f"tart={tart}"]
@@ -488,12 +524,12 @@ def tag_target_set() -> set:
         "wait": "wait for GHCR (with --tools-tag) and for the PyPI run (default)",
         "skip_tests": "skip the YAML/stimela checks (not for routine use)",
         "skip_smoke": "skip the end-to-end basics example (not for routine use)",
-        "smoke_tart": "TART station the smoke test images (default: ghana)",
+        "smoke_tart": "TART station the smoke test images (default: mz-up — offline, on the committed pre-downloaded data)",
         "dry_run": "print the plan and exit",
     }
 )
-def release(c, level="patch", yes=False, tools_tag=None, wait=True, skip_tests=False, skip_smoke=False, smoke_tart="ghana", dry_run=False):
-    """base image -> test -> smoke -> version -> tag -> CI publishes to PyPI."""
+def release(c, level="patch", yes=False, tools_tag=None, wait=True, skip_tests=False, skip_smoke=False, smoke_tart="mz-up", dry_run=False):
+    """base image -> test -> smoke (offline mz-up by default) -> version -> tag -> CI publishes to PyPI."""
     current = read_version()
     target = current if f"v{current}" not in tag_target_set() else bump_version(current, level)
 
@@ -503,7 +539,8 @@ def release(c, level="patch", yes=False, tools_tag=None, wait=True, skip_tests=F
             state = "exists" if _image_exists(tools_tag) else "not yet"
             print(f"  1. base image  genesis -> {tools_tag} (GHCR: {state})")
         print(f"  2. test        YAML + stimela dry-runs of {len(_example_recipes())} recipes")
-        print(f"  3. smoke       end-to-end basics example (tart={smoke_tart})" + ("  [skipped]" if skip_smoke else ""))
+        offline = ", offline on testdata/mz-up-vis.hdf" if smoke_tart == "mz-up" else ""
+        print(f"  3. smoke       end-to-end basics example (tart={smoke_tart}{offline})" + ("  [skipped]" if skip_smoke else ""))
         note = " (already unreleased)" if target == current else f" ({level} bump)"
         print(f"  4. version     {current} -> {target}{note}")
         print(f"  5. publish     commit + tag v{target} + push -> deploy_module.yaml -> PyPI")

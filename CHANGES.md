@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.5.4
+
+- Release smoke gate runs offline on committed mz-up data: `invoke smoke`
+  (and `invoke release`'s smoke stage, now defaulting to `tart=mz-up`)
+  images `testdata/mz-up-vis.hdf` — visibilities pre-downloaded from the
+  mz-up TART — instead of calling the TART API: the basics recipe's
+  download step skips itself when `<tart>-vis.hdf` already exists. New
+  `smoke --hdf` accepts any pre-downloaded file; it must be named
+  `<tart>-vis.hdf`, the name the recipe's EXISTS check looks for.
+- `smoke --nvis` now patches the recipe's `nvis:` value with a regex and
+  fails when no such line exists — it previously matched the literal
+  `nvis: 10000`, which stopped matching when the recipe moved to 1000
+  (radio-imaging `c022044`), so the flag silently did nothing.
+
 ## 0.5.3
 
 - Release 0.5.3.

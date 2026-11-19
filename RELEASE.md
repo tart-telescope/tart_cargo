@@ -23,7 +23,8 @@ checklist — lives in `AGENTS.md`; this file is the operational how-to.
 ```console
 $ invoke --list
   bump      Show (or apply) the next package version and its CHANGES section.
-  release   base image -> test -> smoke -> version -> tag -> CI publishes to PyPI.
+  release   base image -> test -> smoke (offline mz-up by default) -> version
+            -> tag -> CI publishes to PyPI.
   smoke     Actually run the radio-imaging basics example end-to-end.
   status    Show package version, tags and the configured tools image.
   test      Parse every cab/recipe YAML and prevalidate each example recipe.
@@ -50,21 +51,32 @@ $ invoke --list
 
 - runs the radio-imaging `basics` example for real — copies
   `simple_recipe.yml` into a scratch dir and executes it with stimela
-  (equivalent to `make TART=<tart>` there): downloads visibilities from a
-  TART station, builds a measurement set, and images with spotless and
-  disko. Fails unless stimela exits 0 and all four expected outputs exist
+  (equivalent to `make TART=<tart>` there): builds a measurement set from
+  TART visibilities and images with spotless and disko. Fails unless
+  stimela exits 0 and all four expected outputs exist
   (`<tart>-spotless.sphere`, `<tart>-disko.sphere`, `spotless-<tart>.svg`,
   `disko-<tart>.svg`).
-- needs apptainer/singularity and network access to the TART API; takes
-  several minutes (a one-off image pull on first run). This is the check
-  that catches broken image contents (e.g. an incompatible dependency
-  inside the tools image) that the `test` dry-runs cannot see.
-- `--tart` picks the station (default `ghana`), `--nvis` lowers the
-  visibility count the recipe images with (as shipped: 10000 — on machines
-  with <32 GB RAM the `disko` step is OOM-killed, so pass e.g. `--nvis=1000`),
-  `--example-dir` locates the radio-imaging basics checkout (default
-  `$RADIO_IMAGING_BASICS` or the sibling `../radio-imaging/basics`),
-  `--keep` retains the scratch dir.
+- **pre-downloaded data**: `tart=mz-up` (the `release` default) images the
+  committed `testdata/mz-up-vis.hdf` — visibilities fetched from the mz-up
+  TART (`https://api.elec.ac.nz/tart/mz-up`) with `tart_download_data`.
+  The recipe's `download-hdf` step is `skip: =EXISTS(recipe.hdf)`, so a
+  `<tart>-vis.hdf` sitting in the working directory is used as-is and the
+  TART API is never contacted. `--hdf` points at any other pre-downloaded
+  file; it must be named `<tart>-vis.hdf` (any other name would miss the
+  recipe's EXISTS check and silently re-download), and a missing
+  `testdata/mz-up-vis.hdf` falls back to downloading.
+- needs apptainer/singularity (and network only when no pre-downloaded
+  data applies); takes several minutes (a one-off image pull on first
+  run). This is the check that catches broken image contents (e.g. an
+  incompatible dependency inside the tools image) that the `test`
+  dry-runs cannot see.
+- `--tart` picks the station (default `ghana`; `release` passes `mz-up`),
+  `--nvis` overrides the visibility count the recipe images with (as
+  shipped: 1000 — on machines with <32 GB RAM the `disko` step is
+  OOM-killed, so lower it further if needed), `--hdf` supplies
+  pre-downloaded visibilities (see above), `--example-dir` locates the
+  radio-imaging basics checkout (default `$RADIO_IMAGING_BASICS` or the
+  sibling `../radio-imaging/basics`), `--keep` retains the scratch dir.
 
 ### `bump`
 
@@ -93,7 +105,9 @@ modified tracked files.
 2. **test** — the YAML + dry-run suite above (`--skip-tests` to bypass).
 3. **smoke** — actually runs the basics example end-to-end (see above) and
    fails the release if it errors or misses an output (`--skip-smoke` to
-   bypass; `--smoke-tart` picks the station, default `ghana`).
+   bypass; `--smoke-tart` picks the station, **default `mz-up`** — offline
+   on the committed `testdata/mz-up-vis.hdf`, so the default release gate
+   needs no TART API access; any other station downloads as before).
 4. **version** — current-if-untagged, otherwise bump, plus the `CHANGES.md`
    section as described above.
 5. **publish** — commit (`pyproject.toml`, `CHANGES.md`, and the genesis file
