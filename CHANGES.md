@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.5
+
+- track uv.lock: drop *.lock ignore; sync self-entry to 0.5.4
+
 ## 0.5.4
 
 - `release --tools-tag` now points the base image at the new tag **before**
@@ -125,6 +129,7 @@
 - Add tart-cargo base with L1C code
 - Update tart-gnss-acquire to latest version
 - Fix security issue: require requests >= 2.33
+
 
 
 
