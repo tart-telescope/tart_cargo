@@ -2,7 +2,7 @@
 #                 [--res-min RES_MIN] [--healpix] [--nside NSIDE] [--api API]
 #                 [--catalog CATALOG] [--file FILE | --ms MS | --vis VIS] [--nvis NVIS]
 #                 [--channel CHANNEL] [--field FIELD] [--ddid DDID] [--dir DIR] [--multimodel]
-#                 [--beam] [--display] [--fits] [--PNG] [--HDF HDF] [--PDF] [--SVG]
+#                 [--beam [BEAM]] [--display] [--fits] [--PNG] [--HDF HDF] [--PDF] [--SVG]
 #                 [--show-sources] [--elevation ELEVATION] [--title TITLE] [--version]
 #                 [--debug] [--show-model]
 #
@@ -33,7 +33,9 @@
 #   --dir DIR             Output directory. (default: .)
 #   --multimodel          Use the SPOTLESS algorithm with multi-dimensional model. (default:
 #                         False)
-#   --beam                Generate a gridless beam. (default: False)
+#   --beam [BEAM]         Antenna beam pattern for the model: 'tart' for the built-in TART
+#                         beam, or a JSON file holding a tart_beam beam or {el, az, gain}
+#                         samples to fit. (default: None)
 #   --display             Display Image to the user (default: False)
 #   --fits                Generate a FITS format image (default: False)
 #   --PNG                 Generate a PNG format image (default: False)
@@ -126,8 +128,9 @@ cabs:
                 dtype: bool
                 info: Use the SPOTLESS algorithm with multi-dimensional model
             beam:
-                dtype: bool
-                info: Generate a gridless beam
+                dtype: str
+                required: false
+                info: "Antenna beam pattern for the model: 'tart' for the built-in TART beam, or the path of a beam JSON file"
             api:
                 dtype: str
                 info: Telescope API server URL
