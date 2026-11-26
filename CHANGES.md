@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.6
+
+- Merge pull request #12 from tart-telescope/spotless-beam-param
+- lock: sync self-entry to 0.5.5
+- Fix spotless beam parameter: accept 'tart' or a beam file path
+
 ## 0.5.5
 
 - track uv.lock: drop *.lock ignore; sync self-entry to 0.5.4
@@ -129,6 +135,7 @@
 - Add tart-cargo base with L1C code
 - Update tart-gnss-acquire to latest version
 - Fix security issue: require requests >= 2.33
+
 
 
 
